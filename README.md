@@ -1,8 +1,18 @@
 # FlutterMate 🚀
 
+[![Flutter](https://img.shields.io/badge/Flutter-3.9.2+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/YoussefSalem582/flutter_mate?style=social)](https://github.com/YoussefSalem582/flutter_mate/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/YoussefSalem582/flutter_mate?style=social)](https://github.com/YoussefSalem582/flutter_mate/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/YoussefSalem582/flutter_mate)](https://github.com/YoussefSalem582/flutter_mate/issues)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/YoussefSalem582/flutter_mate/pulls)
+
 **Your Personal Flutter Learning Companion**
 
 FlutterMate is a comprehensive learning assistant designed to guide you from Flutter beginner to advanced developer through structured lessons, progress tracking, and AI-powered assistance.
+
+📚 [**View Documentation**](https://youssefsalem582.github.io/flutter_mate/) | 🐛 [**Report Bug**](https://github.com/YoussefSalem582/flutter_mate/issues) | 💡 [**Request Feature**](https://github.com/YoussefSalem582/flutter_mate/issues)
 
 ## ✨ Features
 
@@ -148,20 +158,32 @@ Current test coverage:
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please:
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting a pull request.
+
+### How to Contribute
+
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a pull request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 👥 Authors
+## 👥 Authors & Contributors
 
-- **Your Name** - Initial work
+### Creator
+- **Youssef Hassan** ([@YoussefSalem582](https://github.com/YoussefSalem582)) - Initial work and development
+
+### Contributors
+
+We welcome contributions! See our [contributors page](https://github.com/YoussefSalem582/flutter_mate/graphs/contributors).
+
+Want to contribute? Check out our [Contributing Guidelines](CONTRIBUTING.md)!
 
 ## 🙏 Acknowledgments
 

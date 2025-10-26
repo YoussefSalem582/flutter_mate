@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FlutterMate - Your Personal Flutter Learning Companion">
+    <meta name="keywords" content="Flutter, Dart, Learning App, Mobile Development, Tutorial">
+    <meta name="author" content="Youssef Hassan">
+    <title>FlutterMate - Flutter Learning Assistant</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/YoussefSalem582/flutter_mate/main/web/favicon.png">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            animation: fadeInDown 1s ease;
+        }
+
+        header p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            animation: fadeInUp 1s ease;
+        }
+
+        .badges {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 20px 0;
+            animation: fadeIn 1.5s ease;
+        }
+
+        .badges img {
+            height: 20px;
+        }
+
+        .content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 1s ease;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .feature-card {
+            padding: 30px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .feature-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .feature-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .feature-card ul li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .feature-card ul li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .stat-box {
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-box:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-box h2 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-box p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .docs-section {
+            margin: 40px 0;
+        }
+
+        .docs-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .docs-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .doc-card {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #333;
+            display: block;
+        }
+
+        .doc-card:hover {
+            background: #e9ecef;
+            transform: translateX(10px);
+        }
+
+        .doc-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+            opacity: 0.9;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 2.5rem; }
+            header p { font-size: 1.1rem; }
+            .content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🚀 FlutterMate</h1>
+            <p>Your Personal Flutter Learning Companion</p>
+            
+            <div class="badges">
+                <img src="https://img.shields.io/badge/Flutter-3.9.2+-02569B?logo=flutter&logoColor=white" alt="Flutter">
+                <img src="https://img.shields.io/badge/Dart-3.0+-0175C2?logo=dart&logoColor=white" alt="Dart">
+                <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
+                <img src="https://img.shields.io/github/stars/YoussefSalem582/flutter_mate?style=social" alt="Stars">
+            </div>
+
+            <div class="cta-buttons">
+                <a href="https://github.com/YoussefSalem582/flutter_mate" class="btn btn-primary">View on GitHub</a>
+                <a href="https://github.com/YoussefSalem582/flutter_mate/releases" class="btn btn-secondary">Download</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="content">
+            <h2 style="text-align: center; color: #667eea; font-size: 2.5rem; margin-bottom: 40px;">
+                Master Flutter Development
+            </h2>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <h2>22</h2>
+                    <p>Structured Lessons</p>
+                </div>
+                <div class="stat-box">
+                    <h2>3</h2>
+                    <p>Learning Stages</p>
+                </div>
+                <div class="stat-box">
+                    <h2>1030</h2>
+                    <p>Minutes of Content</p>
+                </div>
+            </div>
+
+            <div class="features">
+                <div class="feature-card">
+                    <h3>📚 Structured Learning</h3>
+                    <ul>
+                        <li>22 comprehensive lessons</li>
+                        <li>Beginner to advanced path</li>
+                        <li>Prerequisite system</li>
+                        <li>Time estimates per lesson</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>📊 Progress Tracking</h3>
+                    <ul>
+                        <li>Real-time stats dashboard</li>
+                        <li>XP points system</li>
+                        <li>Day streak counter</li>
+                        <li>Achievement unlocks</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🎓 Rich Content</h3>
+                    <ul>
+                        <li>Detailed lesson overviews</li>
+                        <li>Learning resources</li>
+                        <li>Practice exercises</li>
+                        <li>Code examples</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🎨 Beautiful UI</h3>
+                    <ul>
+                        <li>Material 3 design</li>
+                        <li>Dark/Light themes</li>
+                        <li>Smooth animations</li>
+                        <li>Responsive layout</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="docs-section">
+                <h2>📖 Documentation</h2>
+                <div class="docs-links">
+                    <a href="https://github.com/YoussefSalem582/flutter_mate/blob/main/README.md" class="doc-card">
+                        <h4>📘 Getting Started</h4>
+                        <p>Quick start guide and installation instructions</p>
+                    </a>
+                    <a href="https://github.com/YoussefSalem582/flutter_mate/blob/main/tech_readme_files/ARCHITECTURE.md" class="doc-card">
+                        <h4>🏗️ Architecture</h4>
+                        <p>Technical architecture and design patterns</p>
+                    </a>
+                    <a href="https://github.com/YoussefSalem582/flutter_mate/blob/main/LESSON_SYSTEM.md" class="doc-card">
+                        <h4>🎓 Lesson System</h4>
+                        <p>Complete lesson implementation guide</p>
+                    </a>
+                    <a href="https://github.com/YoussefSalem582/flutter_mate/blob/main/LESSON_GUIDE.md" class="doc-card">
+                        <h4>📚 User Guide</h4>
+                        <p>How to use the lesson system effectively</p>
+                    </a>
+                    <a href="https://github.com/YoussefSalem582/flutter_mate/blob/main/ROADMAP.md" class="doc-card">
+                        <h4>🗺️ Roadmap</h4>
+                        <p>Future features and development plans</p>
+                    </a>
+                    <a href="https://github.com/YoussefSalem582/flutter_mate/blob/main/CHANGELOG.md" class="doc-card">
+                        <h4>📝 Changelog</h4>
+                        <p>Version history and updates</p>
+                    </a>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 60px 0;">
+                <h2 style="color: #667eea; margin-bottom: 20px;">Ready to Start Learning?</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #666;">
+                    Clone the repository and begin your Flutter journey today!
+                </p>
+                <div class="cta-buttons">
+                    <a href="https://github.com/YoussefSalem582/flutter_mate/fork" class="btn btn-primary">Fork on GitHub</a>
+                    <a href="https://github.com/YoussefSalem582/flutter_mate/issues/new" class="btn btn-secondary">Report Issue</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 FlutterMate - Created by Youssef Hassan</p>
+            <p>Licensed under MIT License</p>
+            <p style="margin-top: 10px;">
+                <a href="https://github.com/YoussefSalem582" style="color: white; text-decoration: none;">
+                    GitHub Profile
+                </a>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>
