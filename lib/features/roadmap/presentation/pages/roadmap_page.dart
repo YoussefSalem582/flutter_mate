@@ -55,11 +55,16 @@ class RoadmapPage extends GetView<RoadmapController> {
           return const Center(child: CircularProgressIndicator());
         }
 
+        if (controller.stages.isEmpty) {
+          return const Center(child: Text('No stages available'));
+        }
+
         final overallProgress = controller.stages.isEmpty
             ? 0.0
-            : controller.stages
-                      .map((s) => controller.stageProgress(s.id))
-                      .reduce((a, b) => a + b) /
+            : controller.stages.fold<double>(
+                    0.0,
+                    (sum, stage) => sum + controller.stageProgress(stage.id),
+                  ) /
                   controller.stages.length;
 
         return ListView(

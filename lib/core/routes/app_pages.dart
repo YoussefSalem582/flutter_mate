@@ -12,6 +12,8 @@ import 'package:flutter_mate/features/progress_tracker/presentation/pages/progre
 import 'package:flutter_mate/features/assistant/controller/assistant_binding.dart';
 import 'package:flutter_mate/features/assistant/presentation/pages/assistant_page.dart';
 import 'package:flutter_mate/features/assistant/presentation/pages/profile_page.dart';
+import 'package:flutter_mate/features/quiz/controller/quiz_binding.dart';
+import 'package:flutter_mate/features/quiz/presentation/pages/quiz_page.dart';
 
 /// App pages and routes configuration
 class AppPages {
@@ -68,6 +70,13 @@ class AppPages {
       name: '/lesson-detail',
       page: () => const LessonDetailPage(),
       binding: LessonBinding(),
+      transition: Transition.rightToLeftWithFade,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: '/quiz',
+      page: () => const QuizPage(),
+      binding: QuizBinding(),
       transition: Transition.rightToLeftWithFade,
       transitionDuration: const Duration(milliseconds: 400),
     ),
