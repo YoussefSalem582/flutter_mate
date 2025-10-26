@@ -1,68 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_mate/core/routes/app_routes.dart';
+import 'package:flutter_mate/core/constants/app_colors.dart';
+import 'package:flutter_mate/core/constants/app_text_styles.dart';
+import '../../controller/assistant_controller.dart';
 
 /// AI Assistant page for guidance and tips
-class AssistantPage extends StatefulWidget {
+class AssistantPage extends GetView<AssistantController> {
   const AssistantPage({super.key});
 
   @override
-  State<AssistantPage> createState() => _AssistantPageState();
-}
-
-class _AssistantPageState extends State<AssistantPage> {
-  final TextEditingController _messageController = TextEditingController();
-  final List<ChatMessage> _messages = [
-    ChatMessage(
-      text:
-          'Hello! I\'m your Flutter learning assistant. How can I help you today?',
-      isUser: false,
-      timestamp: DateTime.now(),
-    ),
-  ];
-
-  @override
-  void dispose() {
-    _messageController.dispose();
-    super.dispose();
-  }
-
-  void _sendMessage() {
-    if (_messageController.text.trim().isEmpty) return;
-
-    setState(() {
-      _messages.add(
-        ChatMessage(
-          text: _messageController.text,
-          isUser: true,
-          timestamp: DateTime.now(),
-        ),
-      );
-    });
-
-    // Simulate AI response
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _messages.add(
-          ChatMessage(
-            text: 'That\'s a great question! Let me help you with that...',
-            isUser: false,
-            timestamp: DateTime.now(),
-          ),
-        );
-      });
-    });
-
-    _messageController.clear();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final TextEditingController messageController = TextEditingController();
+    final ScrollController scrollController = ScrollController();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AI Assistant'),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.info.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.smart_toy, color: AppColors.info),
+            ),
+            const SizedBox(width: 12),
+            const Text('AI Assistant'),
+          ],
+        ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              controller.clearChat();
+              Get.snackbar(
+                'Chat Cleared',
+                'Starting fresh conversation',
+                snackPosition: SnackPosition.BOTTOM,
+                duration: const Duration(seconds: 2),
+              );
+            },
+            tooltip: 'Clear chat',
+          ),
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () => Get.toNamed(AppRoutes.profile),
@@ -72,83 +56,196 @@ class _AssistantPageState extends State<AssistantPage> {
       ),
       body: Column(
         children: [
-          // Quick Tips Section
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Theme.of(context).colorScheme.primaryContainer,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.lightbulb,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Tip of the Day',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+          // Tips Banner
+          Obx(() {
+            if (controller.messages.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.info.withOpacity(0.1),
+                    AppColors.success.withOpacity(0.1),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Remember to use const constructors whenever possible to improve performance!',
-                  style: Theme.of(context).textTheme.bodyMedium,
+                border: Border(
+                  bottom: BorderSide(
+                    color: Theme.of(context).dividerColor,
+                  ),
                 ),
-              ],
-            ),
-          ).animate().fadeIn().slideY(begin: -0.2, end: 0),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.tips_and_updates,
+                    color: AppColors.info,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Pro tip: Ask specific questions for better answers!',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ).animate().fadeIn().slideY(begin: -0.3);
+          }),
+
           // Messages List
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                return _buildMessageBubble(_messages[index])
-                    .animate()
-                    .fadeIn(delay: Duration(milliseconds: 100 * index))
-                    .slideX(
-                      begin: _messages[index].isUser ? 0.2 : -0.2,
-                      end: 0,
-                    );
-              },
-            ),
+            child: Obx(() {
+              if (controller.messages.isEmpty) {
+                return _buildEmptyState(context);
+              }
+
+              // Auto-scroll to bottom when new message added
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (scrollController.hasClients) {
+                  scrollController.animateTo(
+                    scrollController.position.maxScrollExtent,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                  );
+                }
+              });
+
+              return ListView.builder(
+                controller: scrollController,
+                padding: const EdgeInsets.all(16),
+                itemCount: controller.messages.length,
+                itemBuilder: (context, index) {
+                  final message = controller.messages[index];
+                  return _buildMessageBubble(context, message, isDark)
+                      .animate()
+                      .fadeIn(delay: 100.ms)
+                      .slideX(
+                        begin: message.isUser ? 0.2 : -0.2,
+                        duration: 300.ms,
+                      );
+                },
+              );
+            }),
           ),
+
+          // Typing Indicator
+          Obx(() {
+            if (!controller.isTyping.value) return const SizedBox.shrink();
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkSurface : Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildTypingDot().animate(onPlay: (controller) => controller.repeat()).fade(duration: 600.ms),
+                        const SizedBox(width: 4),
+                        _buildTypingDot().animate(onPlay: (controller) => controller.repeat()).fade(duration: 600.ms, delay: 200.ms),
+                        const SizedBox(width: 4),
+                        _buildTypingDot().animate(onPlay: (controller) => controller.repeat()).fade(duration: 600.ms, delay: 400.ms),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+
+          // Quick Suggestions
+          Obx(() {
+            if (controller.messages.length > 1) return const SizedBox.shrink();
+            return Container(
+              height: 60,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: controller.suggestions.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ActionChip(
+                      avatar: const Icon(Icons.lightbulb_outline, size: 18),
+                      label: Text(
+                        controller.suggestions[index],
+                        style: AppTextStyles.bodySmall,
+                      ),
+                      onPressed: () {
+                        messageController.text = controller.suggestions[index];
+                        controller.sendMessage(messageController.text);
+                        messageController.clear();
+                      },
+                    ).animate().fadeIn(delay: (index * 100).ms).scale(),
+                  );
+                },
+              ),
+            );
+          }),
+
           // Input Field
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: Theme.of(context).scaffoldBackgroundColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity(0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -5),
                 ),
               ],
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: const InputDecoration(
-                      hintText: 'Ask me anything about Flutter...',
-                      border: OutlineInputBorder(),
+            child: SafeArea(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: messageController,
+                      decoration: InputDecoration(
+                        hintText: 'Ask me anything about Flutter...',
+                        prefixIcon: const Icon(Icons.chat_bubble_outline),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        filled: true,
+                        fillColor: isDark ? AppColors.darkSurface : Colors.grey.shade100,
+                      ),
+                      maxLines: null,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (text) {
+                        controller.sendMessage(text);
+                        messageController.clear();
+                      },
                     ),
-                    onSubmitted: (_) => _sendMessage(),
                   ),
-                ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  icon: const Icon(Icons.send),
-                  onPressed: _sendMessage,
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  IconButton.filled(
+                    icon: const Icon(Icons.send_rounded),
+                    iconSize: 24,
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.info,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.all(12),
+                    ),
+                    onPressed: () {
+                      controller.sendMessage(messageController.text);
+                      messageController.clear();
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -157,44 +254,163 @@ class _AssistantPageState extends State<AssistantPage> {
     );
   }
 
-  Widget _buildMessageBubble(ChatMessage message) {
+  Widget _buildTypingDot() {
+    return Container(
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(
+        color: AppColors.info,
+        shape: BoxShape.circle,
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.chat_outlined,
+            size: 80,
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+          ).animate().fadeIn().scale(),
+          const SizedBox(height: 16),
+          Text(
+            'No messages yet',
+            style: AppTextStyles.h3.copyWith(
+              color: Theme.of(context).textTheme.bodyLarge?.color,
+            ),
+          ).animate().fadeIn(delay: 200.ms),
+          const SizedBox(height: 8),
+          Text(
+            'Start a conversation with your AI assistant',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+            ),
+            textAlign: TextAlign.center,
+          ).animate().fadeIn(delay: 300.ms),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageBubble(BuildContext context, ChatMessage message, bool isDark) {
     return Align(
       alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        margin: const EdgeInsets.only(bottom: 16),
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
-        ),
-        decoration: BoxDecoration(
-          color: message.isUser
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(16),
+          maxWidth: MediaQuery.of(context).size.width * 0.8,
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: message.isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            Text(
-              message.text,
-              style: TextStyle(
-                color: message.isUser
-                    ? Theme.of(context).colorScheme.onPrimary
-                    : Theme.of(context).colorScheme.onSurface,
+            // Avatar + Name
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6, left: 4, right: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!message.isUser) ...[
+                    CircleAvatar(
+                      radius: 12,
+                      backgroundColor: AppColors.info.withOpacity(0.2),
+                      child: const Icon(Icons.smart_toy, size: 14, color: AppColors.info),
+                    ),
+                    const SizedBox(width: 6),
+                  ],
+                  Text(
+                    message.isUser ? 'You' : 'AI Assistant',
+                    style: AppTextStyles.caption.copyWith(
+                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (message.isUser) ...[
+                    const SizedBox(width: 6),
+                    CircleAvatar(
+                      radius: 12,
+                      backgroundColor: AppColors.info.withOpacity(0.2),
+                      child: const Icon(Icons.person, size: 14, color: AppColors.info),
+                    ),
+                  ],
+                ],
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              _formatTime(message.timestamp),
-              style: TextStyle(
-                fontSize: 10,
-                color: message.isUser
-                    ? Theme.of(
-                        context,
-                      ).colorScheme.onPrimary.withValues(alpha: 0.7)
-                    : Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.5),
+            // Message Bubble
+            GestureDetector(
+              onLongPress: () {
+                Clipboard.setData(ClipboardData(text: message.text));
+                Get.snackbar(
+                  'Copied',
+                  'Message copied to clipboard',
+                  snackPosition: SnackPosition.BOTTOM,
+                  duration: const Duration(seconds: 2),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: message.isUser
+                      ? LinearGradient(
+                          colors: [AppColors.info, AppColors.info.withOpacity(0.8)],
+                        )
+                      : null,
+                  color: message.isUser
+                      ? null
+                      : (isDark ? AppColors.darkSurface : Colors.grey.shade100),
+                  borderRadius: BorderRadius.only(
+                    topLeft: const Radius.circular(20),
+                    topRight: const Radius.circular(20),
+                    bottomLeft: Radius.circular(message.isUser ? 20 : 4),
+                    bottomRight: Radius.circular(message.isUser ? 4 : 20),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      message.text,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: message.isUser
+                            ? Colors.white
+                            : Theme.of(context).textTheme.bodyLarge?.color,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _formatTime(message.timestamp),
+                          style: AppTextStyles.caption.copyWith(
+                            fontSize: 10,
+                            color: message.isUser
+                                ? Colors.white.withOpacity(0.7)
+                                : Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                          ),
+                        ),
+                        if (message.isUser) ...[
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.done_all,
+                            size: 12,
+                            color: Colors.white.withOpacity(0.7),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -237,16 +453,4 @@ class _AssistantPageState extends State<AssistantPage> {
       },
     );
   }
-}
-
-class ChatMessage {
-  final String text;
-  final bool isUser;
-  final DateTime timestamp;
-
-  ChatMessage({
-    required this.text,
-    required this.isUser,
-    required this.timestamp,
-  });
 }

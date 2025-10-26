@@ -9,6 +9,7 @@ import 'package:flutter_mate/features/roadmap/presentation/pages/lessons_page.da
 import 'package:flutter_mate/features/roadmap/presentation/pages/lesson_detail_page.dart';
 import 'package:flutter_mate/features/progress_tracker/controller/progress_tracker_binding.dart';
 import 'package:flutter_mate/features/progress_tracker/presentation/pages/progress_tracker_page.dart';
+import 'package:flutter_mate/features/assistant/controller/assistant_binding.dart';
 import 'package:flutter_mate/features/assistant/presentation/pages/assistant_page.dart';
 import 'package:flutter_mate/features/assistant/presentation/pages/profile_page.dart';
 
@@ -46,6 +47,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.assistant,
       page: () => const AssistantPage(),
+      binding: AssistantBinding(),
       transition: Transition.rightToLeftWithFade,
       transitionDuration: const Duration(milliseconds: 400),
     ),
