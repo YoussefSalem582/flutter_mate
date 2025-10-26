@@ -23,20 +23,33 @@ FlutterMate is a comprehensive learning assistant designed to guide you from Flu
 - **Advanced Stage:** 6 lessons on architecture & optimization (440 min)
 - **Prerequisite System:** Unlock lessons as you progress
 - **Time Estimates:** Know how long each lesson takes
+- **Interactive Quizzes:** Test your knowledge after each lesson
+
+### 🎯 Quiz System
+- **25+ Quiz Questions** covering all lessons and topics
+- **Instant Feedback:** Color-coded answers with explanations
+- **Score Tracking:** Monitor your quiz performance
+- **XP Rewards:** Earn points for correct answers
+- **Performance Stats:** View completion rate and average score
+- **Smart Results:** Get personalized feedback based on performance
 
 ### 📊 Progress Tracking
 - **Real-time Stats:** Lessons completed, projects built, XP earned
+- **Quiz Analytics:** Track quizzes completed and average scores
 - **Stage Completion:** Visual progress bars for each level
 - **Achievement System:** Unlock badges and milestones
 - **Day Streak:** Track your learning consistency
 - **Activity Feed:** See your recent accomplishments
+- **Weekly Charts:** Visualize your learning progress
 
 ### 🎓 Lesson Detail Pages
 - **Rich Content:** Detailed overviews and objectives
 - **Learning Resources:** Curated external links and docs
 - **Practice Exercises:** Hands-on challenges
+- **Quiz Integration:** Take quizzes directly from lessons
 - **Completion Tracking:** Mark lessons complete
 - **Difficulty Indicators:** Easy, Medium, Hard badges
+- **XP Indicators:** See potential rewards before starting
 
 ### 🎨 Beautiful UI
 - **Material 3 Design:** Modern, clean interface

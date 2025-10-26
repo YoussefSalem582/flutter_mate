@@ -5,6 +5,7 @@ import 'package:flutter_mate/core/theme/app_theme.dart';
 import 'package:flutter_mate/core/theme/theme_manager.dart';
 import 'package:flutter_mate/core/routes/app_pages.dart';
 import 'package:flutter_mate/core/routes/app_routes.dart';
+import 'package:flutter_mate/features/quiz/services/quiz_tracking_service.dart';
 
 void main() async {
   // Ensure Flutter bindings are initialized
@@ -16,6 +17,9 @@ void main() async {
 
   // Initialize GetX dependencies
   Get.put(ThemeManager());
+
+  // Initialize Quiz Tracking Service
+  await Get.putAsync(() => QuizTrackingService().init());
 
   runApp(const FlutterMateApp());
 }

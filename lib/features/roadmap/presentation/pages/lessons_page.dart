@@ -18,8 +18,19 @@ class LessonsPage extends GetView<LessonController> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: CustomScrollView(
-        slivers: [_buildAppBar(context, stage), _buildLessonsList(context)],
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await controller.loadLessonsByStage(stage.id);
+          Get.snackbar(
+            'Refreshed',
+            'Progress updated successfully',
+            snackPosition: SnackPosition.BOTTOM,
+            duration: const Duration(seconds: 2),
+          );
+        },
+        child: CustomScrollView(
+          slivers: [_buildAppBar(context, stage), _buildLessonsList(context)],
+        ),
       ),
     );
   }
@@ -137,6 +148,82 @@ class LessonsPage extends GetView<LessonController> {
             final isCompleted = controller.isLessonCompleted(lesson.id);
             final canAccess = controller.canAccessLesson(lesson);
 
+            // Add a welcome message for the first lesson if no lessons completed
+            if (index == 0 && controller.completedCount == 0) {
+              return Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.info.withOpacity(0.1),
+                          AppColors.success.withOpacity(0.1),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: AppColors.info.withOpacity(0.3),
+                        width: 2,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.info.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.rocket_launch,
+                            color: AppColors.info,
+                            size: 32,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Start Your Journey! 🚀',
+                                style: AppTextStyles.h3.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Tap the first lesson below to begin learning Flutter',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color
+                                      ?.withOpacity(0.7),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ).animate().fadeIn().slideY(begin: -0.2),
+                  _buildLessonCard(
+                        context,
+                        lesson,
+                        isCompleted,
+                        canAccess,
+                        index,
+                      )
+                      .animate()
+                      .fadeIn(duration: 300.ms, delay: 100.ms)
+                      .slideX(begin: 0.2, duration: 300.ms, delay: 100.ms),
+                ],
+              );
+            }
+
             return _buildLessonCard(
                   context,
                   lesson,
@@ -187,8 +274,21 @@ class LessonsPage extends GetView<LessonController> {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: canAccess
-              ? () => Get.toNamed('/lesson-detail', arguments: lesson)
-              : null,
+              ? () async {
+                  await Get.toNamed('/lesson-detail', arguments: lesson);
+                  // Refresh lessons after returning from detail page
+                  await controller.loadLessonsByStage(stage.id);
+                }
+              : () {
+                  Get.snackbar(
+                    'Locked',
+                    'Complete the prerequisite lessons first',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.orange,
+                    colorText: Colors.white,
+                    duration: const Duration(seconds: 2),
+                  );
+                },
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(

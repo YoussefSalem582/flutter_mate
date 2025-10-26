@@ -39,7 +39,11 @@ class LessonRepositoryImpl implements LessonRepository {
       duration: 15,
       difficulty: 'easy',
       order: 1,
-      resources: ['Official Flutter Docs', 'Flutter Introduction Video'],
+      resources: {
+        'Official Flutter Docs': 'https://flutter.dev/docs',
+        'Flutter Introduction Video':
+            'https://www.youtube.com/watch?v=fq4N0hgOWzU',
+      },
     ),
     Lesson(
       id: 'b2',
@@ -51,7 +55,11 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'easy',
       order: 2,
       prerequisites: ['b1'],
-      resources: ['Flutter Installation Guide', 'IDE Setup Tutorial'],
+      resources: {
+        'Flutter Installation Guide':
+            'https://flutter.dev/docs/get-started/install',
+        'IDE Setup Tutorial': 'https://flutter.dev/docs/get-started/editor',
+      },
     ),
     Lesson(
       id: 'b3',
@@ -63,7 +71,10 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'easy',
       order: 3,
       prerequisites: ['b2'],
-      resources: ['Dart Language Tour', 'DartPad for Practice'],
+      resources: {
+        'Dart Language Tour': 'https://dart.dev/guides/language/language-tour',
+        'DartPad for Practice': 'https://dartpad.dev',
+      },
     ),
     Lesson(
       id: 'b4',
@@ -75,7 +86,11 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'easy',
       order: 4,
       prerequisites: ['b3'],
-      resources: ['Flutter Getting Started', 'First App Tutorial'],
+      resources: {
+        'Flutter Getting Started':
+            'https://flutter.dev/docs/get-started/codelab',
+        'First App Tutorial': 'https://flutter.dev/docs/get-started/test-drive',
+      },
     ),
     Lesson(
       id: 'b5',
@@ -87,7 +102,11 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'easy',
       order: 5,
       prerequisites: ['b4'],
-      resources: ['Widget Catalog', 'Flutter Widget 101'],
+      resources: {
+        'Widget Catalog': 'https://flutter.dev/docs/development/ui/widgets',
+        'Flutter Widget 101':
+            'https://flutter.dev/docs/development/ui/widgets-intro',
+      },
     ),
     Lesson(
       id: 'b6',
@@ -99,7 +118,10 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'medium',
       order: 6,
       prerequisites: ['b5'],
-      resources: ['Layout Guide', 'Material Design Specs'],
+      resources: {
+        'Layout Guide': 'https://flutter.dev/docs/development/ui/layout',
+        'Material Design Specs': 'https://material.io/design',
+      },
     ),
     Lesson(
       id: 'b7',
@@ -111,7 +133,11 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'medium',
       order: 7,
       prerequisites: ['b6'],
-      resources: ['Form Validation', 'Gesture Detection Guide'],
+      resources: {
+        'Form Validation': 'https://flutter.dev/docs/cookbook/forms/validation',
+        'Gesture Detection Guide':
+            'https://flutter.dev/docs/development/ui/advanced/gestures',
+      },
     ),
     Lesson(
       id: 'b8',
@@ -123,7 +149,12 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'medium',
       order: 8,
       prerequisites: ['b7'],
-      resources: ['Navigation Guide', 'Routing Best Practices'],
+      resources: {
+        'Navigation Guide':
+            'https://flutter.dev/docs/development/ui/navigation',
+        'Routing Best Practices':
+            'https://flutter.dev/docs/cookbook/navigation',
+      },
     ),
 
     // Intermediate Stage Lessons
@@ -137,7 +168,12 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'medium',
       order: 1,
       prerequisites: ['b8'],
-      resources: ['State Management Overview', 'Flutter Architecture Patterns'],
+      resources: {
+        'State Management Overview':
+            'https://flutter.dev/docs/development/data-and-backend/state-mgmt/intro',
+        'Flutter Architecture Patterns':
+            'https://flutter.dev/docs/development/data-and-backend/state-mgmt/options',
+      },
     ),
     Lesson(
       id: 'i2',
@@ -149,7 +185,11 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'medium',
       order: 2,
       prerequisites: ['i1'],
-      resources: ['Provider Documentation', 'Riverpod Guide'],
+      resources: {
+        'Provider Documentation': 'https://pub.dev/packages/provider',
+        'Riverpod Guide':
+            'https://riverpod.dev/docs/introduction/getting_started',
+      },
     ),
     Lesson(
       id: 'i3',
@@ -161,7 +201,11 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'medium',
       order: 3,
       prerequisites: ['i1'],
-      resources: ['HTTP Package', 'JSON Serialization'],
+      resources: {
+        'HTTP Package': 'https://pub.dev/packages/http',
+        'JSON Serialization':
+            'https://flutter.dev/docs/development/data-and-backend/json',
+      },
     ),
     Lesson(
       id: 'i4',
@@ -173,7 +217,11 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'medium',
       order: 4,
       prerequisites: ['i3'],
-      resources: ['SQFlite Documentation', 'Database Best Practices'],
+      resources: {
+        'SQFlite Documentation': 'https://pub.dev/packages/sqflite',
+        'Database Best Practices':
+            'https://flutter.dev/docs/cookbook/persistence/sqlite',
+      },
     ),
     Lesson(
       id: 'i5',
@@ -185,7 +233,11 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'hard',
       order: 5,
       prerequisites: ['b8'],
-      resources: ['Animation Guide', 'Animation Examples'],
+      resources: {
+        'Animation Guide': 'https://flutter.dev/docs/development/ui/animations',
+        'Animation Examples':
+            'https://flutter.dev/docs/development/ui/animations/tutorial',
+      },
     ),
     Lesson(
       id: 'i6',
@@ -197,7 +249,11 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'hard',
       order: 6,
       prerequisites: ['i3', 'i4'],
-      resources: ['FlutterFire Documentation', 'Firebase Setup Guide'],
+      resources: {
+        'FlutterFire Documentation': 'https://firebase.flutter.dev',
+        'Firebase Setup Guide':
+            'https://firebase.google.com/docs/flutter/setup',
+      },
     ),
 
     // Advanced Stage Lessons
@@ -211,7 +267,12 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'hard',
       order: 1,
       prerequisites: ['i5'],
-      resources: ['CustomPaint Guide', 'Canvas Examples'],
+      resources: {
+        'CustomPaint Guide':
+            'https://api.flutter.dev/flutter/widgets/CustomPaint-class.html',
+        'Canvas Examples':
+            'https://flutter.dev/docs/cookbook/effects/custom-painter',
+      },
     ),
     Lesson(
       id: 'a2',
@@ -223,7 +284,12 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'hard',
       order: 2,
       prerequisites: ['i6'],
-      resources: ['Platform Channel Guide', 'Native Integration'],
+      resources: {
+        'Platform Channel Guide':
+            'https://flutter.dev/docs/development/platform-integration/platform-channels',
+        'Native Integration':
+            'https://flutter.dev/docs/development/platform-integration',
+      },
     ),
     Lesson(
       id: 'a3',
@@ -235,7 +301,11 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'hard',
       order: 3,
       prerequisites: ['i2'],
-      resources: ['Clean Architecture', 'BLoC Pattern Guide'],
+      resources: {
+        'Clean Architecture':
+            'https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html',
+        'BLoC Pattern Guide': 'https://bloclibrary.dev/#/gettingstarted',
+      },
     ),
     Lesson(
       id: 'a4',
@@ -247,7 +317,10 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'hard',
       order: 4,
       prerequisites: ['a3'],
-      resources: ['Testing Guide', 'TDD Best Practices'],
+      resources: {
+        'Testing Guide': 'https://flutter.dev/docs/testing',
+        'TDD Best Practices': 'https://flutter.dev/docs/cookbook/testing',
+      },
     ),
     Lesson(
       id: 'a5',
@@ -259,7 +332,11 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'hard',
       order: 5,
       prerequisites: ['a3'],
-      resources: ['Performance Guide', 'DevTools Profiling'],
+      resources: {
+        'Performance Guide': 'https://flutter.dev/docs/perf/best-practices',
+        'DevTools Profiling':
+            'https://flutter.dev/docs/development/tools/devtools/performance',
+      },
     ),
     Lesson(
       id: 'a6',
@@ -271,7 +348,10 @@ class LessonRepositoryImpl implements LessonRepository {
       difficulty: 'hard',
       order: 6,
       prerequisites: ['a4'],
-      resources: ['Deployment Guide', 'CI/CD Setup'],
+      resources: {
+        'Deployment Guide': 'https://flutter.dev/docs/deployment',
+        'CI/CD Setup': 'https://flutter.dev/docs/deployment/cd',
+      },
     ),
   ];
 

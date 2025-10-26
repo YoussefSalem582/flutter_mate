@@ -5,6 +5,7 @@ import 'package:flutter_mate/core/routes/app_routes.dart';
 import 'package:flutter_mate/core/constants/app_colors.dart';
 import 'package:flutter_mate/core/constants/app_text_styles.dart';
 import 'package:flutter_mate/features/progress_tracker/controller/progress_tracker_controller.dart';
+import 'package:flutter_mate/features/quiz/services/quiz_tracking_service.dart';
 
 /// Progress tracker page to monitor learning achievements
 class ProgressTrackerPage extends GetView<ProgressTrackerController> {
@@ -77,6 +78,14 @@ class ProgressTrackerPage extends GetView<ProgressTrackerController> {
                 context,
                 isDark,
               ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
+
+              const SizedBox(height: 20),
+
+              // Quiz Stats Card
+              _buildQuizStatsCard(
+                context,
+                isDark,
+              ).animate().fadeIn(delay: 250.ms).slideX(begin: -0.2),
 
               const SizedBox(height: 24),
 
@@ -386,6 +395,177 @@ class ProgressTrackerPage extends GetView<ProgressTrackerController> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildQuizStatsCard(BuildContext context, bool isDark) {
+    final quizService = Get.find<QuizTrackingService>();
+
+    return Obx(() {
+      final totalQuizzes = quizService.totalQuizzesCompleted.value;
+      final totalXP = quizService.totalQuizXP.value;
+      final avgScore = quizService.averageScore.value;
+
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.info, AppColors.info.withOpacity(0.7)],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.info.withOpacity(0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.quiz_rounded,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Quiz Performance',
+                        style: AppTextStyles.h3.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        totalQuizzes > 0
+                            ? 'Keep up the great work!'
+                            : 'Start taking quizzes to track your progress',
+                        style: AppTextStyles.caption.copyWith(
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildQuizStat(
+                    'Completed',
+                    totalQuizzes.toString(),
+                    Icons.check_circle_outline,
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: Colors.white.withOpacity(0.2),
+                ),
+                Expanded(
+                  child: _buildQuizStat(
+                    'Avg Score',
+                    '${avgScore.toStringAsFixed(0)}%',
+                    Icons.percent,
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: Colors.white.withOpacity(0.2),
+                ),
+                Expanded(
+                  child: _buildQuizStat(
+                    'XP Earned',
+                    totalXP.toString(),
+                    Icons.stars,
+                  ),
+                ),
+              ],
+            ),
+            if (totalQuizzes > 0) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      avgScore >= 80
+                          ? Icons.emoji_events
+                          : avgScore >= 70
+                          ? Icons.thumb_up
+                          : Icons.trending_up,
+                      color: Colors.amber,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        avgScore >= 80
+                            ? 'Excellent! You\'re mastering Flutter!'
+                            : avgScore >= 70
+                            ? 'Good job! Keep practicing!'
+                            : 'Keep learning, you\'re improving!',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildQuizStat(String label, String value, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.white, size: 24),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: AppTextStyles.h2.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: AppTextStyles.caption.copyWith(
+            color: Colors.white.withOpacity(0.9),
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 

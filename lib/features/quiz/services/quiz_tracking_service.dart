@@ -1,0 +1,158 @@
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Service for tracking quiz completion and scores
+class QuizTrackingService extends GetxService {
+  late SharedPreferences _prefs;
+
+  final RxMap<String, QuizResult> quizResults = <String, QuizResult>{}.obs;
+  final RxInt totalQuizzesCompleted = 0.obs;
+  final RxInt totalQuizXP = 0.obs;
+  final RxDouble averageScore = 0.0.obs;
+
+  Future<QuizTrackingService> init() async {
+    _prefs = await SharedPreferences.getInstance();
+    await _loadQuizResults();
+    return this;
+  }
+
+  Future<void> _loadQuizResults() async {
+    final keys = _prefs.getKeys().where((key) => key.startsWith('quiz_'));
+
+    for (final key in keys) {
+      final lessonId = key.replaceFirst('quiz_', '');
+      final score = _prefs.getInt('${key}_score') ?? 0;
+      final maxScore = _prefs.getInt('${key}_max') ?? 0;
+      final xpEarned = _prefs.getInt('${key}_xp') ?? 0;
+      final timestamp = _prefs.getInt('${key}_time') ?? 0;
+      final correctAnswers = _prefs.getInt('${key}_correct') ?? 0;
+      final totalQuestions = _prefs.getInt('${key}_total') ?? 0;
+
+      quizResults[lessonId] = QuizResult(
+        lessonId: lessonId,
+        score: score,
+        maxScore: maxScore,
+        xpEarned: xpEarned,
+        timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
+        correctAnswers: correctAnswers,
+        totalQuestions: totalQuestions,
+      );
+    }
+
+    _updateStats();
+  }
+
+  Future<void> saveQuizResult({
+    required String lessonId,
+    required int score,
+    required int maxScore,
+    required int xpEarned,
+    required int correctAnswers,
+    required int totalQuestions,
+  }) async {
+    final now = DateTime.now();
+
+    await _prefs.setInt('quiz_${lessonId}_score', score);
+    await _prefs.setInt('quiz_${lessonId}_max', maxScore);
+    await _prefs.setInt('quiz_${lessonId}_xp', xpEarned);
+    await _prefs.setInt('quiz_${lessonId}_time', now.millisecondsSinceEpoch);
+    await _prefs.setInt('quiz_${lessonId}_correct', correctAnswers);
+    await _prefs.setInt('quiz_${lessonId}_total', totalQuestions);
+
+    quizResults[lessonId] = QuizResult(
+      lessonId: lessonId,
+      score: score,
+      maxScore: maxScore,
+      xpEarned: xpEarned,
+      timestamp: now,
+      correctAnswers: correctAnswers,
+      totalQuestions: totalQuestions,
+    );
+
+    _updateStats();
+  }
+
+  void _updateStats() {
+    totalQuizzesCompleted.value = quizResults.length;
+
+    if (quizResults.isNotEmpty) {
+      totalQuizXP.value = quizResults.values.fold<int>(
+        0,
+        (sum, result) => sum + result.xpEarned,
+      );
+
+      final totalScorePercent = quizResults.values.fold<double>(
+        0.0,
+        (sum, result) => sum + result.scorePercentage,
+      );
+      averageScore.value = totalScorePercent / quizResults.length;
+    } else {
+      totalQuizXP.value = 0;
+      averageScore.value = 0.0;
+    }
+  }
+
+  QuizResult? getQuizResult(String lessonId) {
+    return quizResults[lessonId];
+  }
+
+  bool hasCompletedQuiz(String lessonId) {
+    return quizResults.containsKey(lessonId);
+  }
+
+  double getQuizScore(String lessonId) {
+    final result = quizResults[lessonId];
+    return result?.scorePercentage ?? 0.0;
+  }
+
+  Future<void> clearAllQuizResults() async {
+    final keys = _prefs.getKeys().where((key) => key.startsWith('quiz_'));
+    for (final key in keys) {
+      await _prefs.remove(key);
+    }
+    quizResults.clear();
+    _updateStats();
+  }
+}
+
+class QuizResult {
+  final String lessonId;
+  final int score;
+  final int maxScore;
+  final int xpEarned;
+  final DateTime timestamp;
+  final int correctAnswers;
+  final int totalQuestions;
+
+  QuizResult({
+    required this.lessonId,
+    required this.score,
+    required this.maxScore,
+    required this.xpEarned,
+    required this.timestamp,
+    required this.correctAnswers,
+    required this.totalQuestions,
+  });
+
+  double get scorePercentage {
+    if (maxScore == 0) return 0.0;
+    return (score / maxScore) * 100;
+  }
+
+  bool get isPassed => scorePercentage >= 70.0;
+
+  String get formattedDate {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} minutes ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} hours ago';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else {
+      return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
+    }
+  }
+}

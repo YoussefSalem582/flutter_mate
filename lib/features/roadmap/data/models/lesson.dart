@@ -9,7 +9,7 @@ class Lesson {
     required this.difficulty,
     required this.order,
     this.prerequisites = const [],
-    this.resources = const [],
+    this.resources = const {},
   });
 
   final String id;
@@ -20,7 +20,7 @@ class Lesson {
   final String difficulty; // 'easy', 'medium', 'hard'
   final int order;
   final List<String> prerequisites;
-  final List<String> resources;
+  final Map<String, String> resources; // title -> URL
 
   Lesson copyWith({
     String? id,
@@ -31,7 +31,7 @@ class Lesson {
     String? difficulty,
     int? order,
     List<String>? prerequisites,
-    List<String>? resources,
+    Map<String, String>? resources,
   }) {
     return Lesson(
       id: id ?? this.id,
