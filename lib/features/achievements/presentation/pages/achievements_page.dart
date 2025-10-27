@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
+import 'package:flutter_mate/core/utils/responsive_utils.dart';
 import '../../controller/achievement_controller.dart';
 import '../../data/models/achievement.dart';
 
@@ -9,90 +10,103 @@ class AchievementsPage extends GetView<AchievementController> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveUtils.isDesktop(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Achievements'),
         backgroundColor: Colors.amber.shade700,
         foregroundColor: Colors.white,
       ),
-      body: Obx(() {
-        if (controller.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        return Column(
-          children: [
-            // XP Header
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.amber.shade700, Colors.amber.shade400],
-                ),
+      body: isDesktop
+          ? Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: _buildContent(),
               ),
+            )
+          : _buildContent(),
+    );
+  }
+
+  Widget _buildContent() {
+    return Obx(() {
+      if (controller.isLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      return Column(
+        children: [
+          // XP Header
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.amber.shade700, Colors.amber.shade400],
+              ),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  'Total XP',
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${controller.totalXP}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${controller.unlockedAchievements.length}/${controller.achievements.length} Unlocked',
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+              ],
+            ),
+          ).animate().fadeIn().slideY(begin: -0.2, duration: 400.ms),
+
+          // Category Tabs
+          Expanded(
+            child: DefaultTabController(
+              length: 5,
               child: Column(
                 children: [
-                  const Text(
-                    'Total XP',
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  TabBar(
+                    isScrollable: true,
+                    labelColor: Colors.amber.shade700,
+                    unselectedLabelColor: Colors.grey,
+                    indicatorColor: Colors.amber.shade700,
+                    tabs: const [
+                      Tab(text: 'All'),
+                      Tab(text: '🎓 Lessons'),
+                      Tab(text: '🎯 Quizzes'),
+                      Tab(text: '🔥 Streaks'),
+                      Tab(text: '⭐ Special'),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${controller.totalXP}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _buildAchievementList(controller.achievements),
+                        _buildAchievementList(_filterByCategory('lessons')),
+                        _buildAchievementList(_filterByCategory('quizzes')),
+                        _buildAchievementList(_filterByCategory('streak')),
+                        _buildAchievementList(_filterByCategory('special')),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${controller.unlockedAchievements.length}/${controller.achievements.length} Unlocked',
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
               ),
-            ).animate().fadeIn().slideY(begin: -0.2, duration: 400.ms),
-
-            // Category Tabs
-            Expanded(
-              child: DefaultTabController(
-                length: 5,
-                child: Column(
-                  children: [
-                    TabBar(
-                      isScrollable: true,
-                      labelColor: Colors.amber.shade700,
-                      unselectedLabelColor: Colors.grey,
-                      indicatorColor: Colors.amber.shade700,
-                      tabs: const [
-                        Tab(text: 'All'),
-                        Tab(text: '🎓 Lessons'),
-                        Tab(text: '🎯 Quizzes'),
-                        Tab(text: '🔥 Streaks'),
-                        Tab(text: '⭐ Special'),
-                      ],
-                    ),
-                    Expanded(
-                      child: TabBarView(
-                        children: [
-                          _buildAchievementList(controller.achievements),
-                          _buildAchievementList(_filterByCategory('lessons')),
-                          _buildAchievementList(_filterByCategory('quizzes')),
-                          _buildAchievementList(_filterByCategory('streak')),
-                          _buildAchievementList(_filterByCategory('special')),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
-          ],
-        );
-      }),
-    );
+          ),
+        ],
+      );
+    });
   }
 
   List<Achievement> _filterByCategory(String category) {
@@ -150,26 +164,23 @@ class _AchievementCard extends StatelessWidget {
           children: [
             // Icon
             Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isUnlocked
-                        ? Colors.amber.shade400
-                        : Colors.grey.shade300,
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color:
+                    isUnlocked ? Colors.amber.shade400 : Colors.grey.shade300,
+              ),
+              child: Center(
+                child: Text(
+                  achievement.icon,
+                  style: TextStyle(
+                    fontSize: 32,
+                    color: isUnlocked ? Colors.white : Colors.grey.shade600,
                   ),
-                  child: Center(
-                    child: Text(
-                      achievement.icon,
-                      style: TextStyle(
-                        fontSize: 32,
-                        color: isUnlocked ? Colors.white : Colors.grey.shade600,
-                      ),
-                    ),
-                  ),
-                )
-                .animate(onPlay: (controller) => controller.repeat())
-                .shimmer(
+                ),
+              ),
+            ).animate(onPlay: (controller) => controller.repeat()).shimmer(
                   duration: isUnlocked ? 2000.ms : 0.ms,
                   color: Colors.white.withOpacity(0.5),
                 ),

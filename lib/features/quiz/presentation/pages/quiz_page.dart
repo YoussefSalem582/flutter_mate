@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_mate/core/utils/responsive_utils.dart';
 import '../../controller/quiz_controller.dart';
 import '../widgets/widgets.dart';
 
@@ -30,123 +31,135 @@ class QuizPage extends GetView<QuizController> {
           ),
         ],
       ),
-      body: Obx(() {
-        // Show results screen when quiz is completed
-        if (controller.isCompleted.value) {
-          // Only award XP if user got all answers correct
-          final isPerfectScore =
-              controller.correctAnswersCount == controller.totalQuestions;
-          final xpEarned = isPerfectScore ? controller.score.value : 0;
-
-          return QuizResultsScreen(
-            score: controller.correctAnswersCount,
-            totalQuestions: controller.totalQuestions,
-            totalXP: xpEarned,
-            onRetry: () {
-              controller.restartQuiz();
-            },
-            onBackToLesson: () => Get.back(),
-            onReviewAnswers: () {
-              _showReviewScreen(context);
-            },
-          );
-        }
-
-        // Show loading state
-        if (controller.questions.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        // Show quiz interface
-        return Column(
-          children: [
-            // Progress header
-            Obx(() => QuizProgressHeader(
-                  currentQuestion: controller.currentQuestionIndex.value + 1,
-                  totalQuestions: controller.totalQuestions,
-                  score: controller.score.value,
-                  progress: controller.progress,
-                  isDark: isDark,
-                )),
-
-            // Question and options
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Obx(() {
-                  final question = controller.currentQuestion;
-                  final userAnswer = controller.getUserAnswer(
-                    controller.currentQuestionIndex.value,
-                  );
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Question card
-                      QuizQuestionCard(
-                        question: question.question,
-                        points: question.points,
-                      )
-                          .animate(
-                            key: ValueKey(
-                              controller.currentQuestionIndex.value,
-                            ),
-                          )
-                          .fadeIn(duration: 300.ms)
-                          .slideX(begin: 0.2),
-
-                      const SizedBox(height: 24),
-
-                      // Answer options
-                      QuizAnswerOptions(
-                        question: question,
-                        userAnswer: userAnswer,
-                        showResult: controller.showExplanation.value,
-                        isDark: isDark,
-                        onSelectAnswer: (index) =>
-                            controller.selectAnswer(index),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Explanation (shown after answering)
-                      if (controller.showExplanation.value)
-                        QuizExplanation(
-                          explanation: question.explanation,
-                          isCorrect: userAnswer == question.correctAnswerIndex,
-                          isDark: isDark,
-                        ),
-                    ],
-                  );
-                }),
-              ),
-            ),
-
-            // Navigation buttons
-            Obx(() => Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: QuizNavigationBar(
-                    currentQuestionIndex: controller.currentQuestionIndex.value,
-                    totalQuestions: controller.totalQuestions,
-                    hasAnswered: controller.getUserAnswer(
-                          controller.currentQuestionIndex.value,
-                        ) !=
-                        null,
-                    onPrevious: () => controller.previousQuestion(),
-                    onNext: () {
-                      if (controller.currentQuestionIndex.value >=
-                          controller.totalQuestions - 1) {
-                        controller.completeQuiz();
-                      } else {
-                        controller.nextQuestion();
-                      }
-                    },
-                  ),
-                )),
-          ],
-        );
-      }),
+      body: ResponsiveBuilder(
+        mobile: _buildQuizContent(context, isDark, lessonId),
+        desktop: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 900),
+            child: _buildQuizContent(context, isDark, lessonId),
+          ),
+        ),
+      ),
     );
+  }
+
+  Widget _buildQuizContent(
+      BuildContext context, bool isDark, String? lessonId) {
+    return Obx(() {
+      // Show results screen when quiz is completed
+      if (controller.isCompleted.value) {
+        // Only award XP if user got all answers correct
+        final isPerfectScore =
+            controller.correctAnswersCount == controller.totalQuestions;
+        final xpEarned = isPerfectScore ? controller.score.value : 0;
+
+        return QuizResultsScreen(
+          score: controller.correctAnswersCount,
+          totalQuestions: controller.totalQuestions,
+          totalXP: xpEarned,
+          onRetry: () {
+            controller.restartQuiz();
+          },
+          onBackToLesson: () => Get.back(),
+          onReviewAnswers: () {
+            _showReviewScreen(context);
+          },
+        );
+      }
+
+      // Show loading state
+      if (controller.questions.isEmpty) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      // Show quiz interface
+      return Column(
+        children: [
+          // Progress header
+          Obx(() => QuizProgressHeader(
+                currentQuestion: controller.currentQuestionIndex.value + 1,
+                totalQuestions: controller.totalQuestions,
+                score: controller.score.value,
+                progress: controller.progress,
+                isDark: isDark,
+              )),
+
+          // Question and options
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Obx(() {
+                final question = controller.currentQuestion;
+                final userAnswer = controller.getUserAnswer(
+                  controller.currentQuestionIndex.value,
+                );
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Question card
+                    QuizQuestionCard(
+                      question: question.question,
+                      points: question.points,
+                    )
+                        .animate(
+                          key: ValueKey(
+                            controller.currentQuestionIndex.value,
+                          ),
+                        )
+                        .fadeIn(duration: 300.ms)
+                        .slideX(begin: 0.2),
+
+                    const SizedBox(height: 24),
+
+                    // Answer options
+                    QuizAnswerOptions(
+                      question: question,
+                      userAnswer: userAnswer,
+                      showResult: controller.showExplanation.value,
+                      isDark: isDark,
+                      onSelectAnswer: (index) => controller.selectAnswer(index),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Explanation (shown after answering)
+                    if (controller.showExplanation.value)
+                      QuizExplanation(
+                        explanation: question.explanation,
+                        isCorrect: userAnswer == question.correctAnswerIndex,
+                        isDark: isDark,
+                      ),
+                  ],
+                );
+              }),
+            ),
+          ),
+
+          // Navigation buttons
+          Obx(() => Padding(
+                padding: const EdgeInsets.all(16),
+                child: QuizNavigationBar(
+                  currentQuestionIndex: controller.currentQuestionIndex.value,
+                  totalQuestions: controller.totalQuestions,
+                  hasAnswered: controller.getUserAnswer(
+                        controller.currentQuestionIndex.value,
+                      ) !=
+                      null,
+                  onPrevious: () => controller.previousQuestion(),
+                  onNext: () {
+                    if (controller.currentQuestionIndex.value >=
+                        controller.totalQuestions - 1) {
+                      controller.completeQuiz();
+                    } else {
+                      controller.nextQuestion();
+                    }
+                  },
+                ),
+              )),
+        ],
+      );
+    });
   }
 
   /// Show restart confirmation dialog

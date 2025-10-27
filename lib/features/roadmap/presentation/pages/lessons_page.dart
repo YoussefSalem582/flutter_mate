@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_mate/core/utils/responsive_utils.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../controller/lesson_controller.dart';
 import '../../data/models/roadmap_stage.dart';
@@ -41,6 +42,7 @@ class LessonsPage extends GetView<LessonController> {
   @override
   Widget build(BuildContext context) {
     final stage = Get.arguments as RoadmapStage;
+    final isDesktop = ResponsiveUtils.isDesktop(context);
 
     // Load lessons when page opens
     controller.loadLessonsByStage(stage.id);
@@ -57,16 +59,48 @@ class LessonsPage extends GetView<LessonController> {
             duration: const Duration(seconds: 2),
           );
         },
-        child: CustomScrollView(
-          slivers: [
-            // Stage header with progress
-            _buildStageAppBar(stage),
-
-            // Lessons list with banners and cards
-            LessonsListWidget(controller: controller, stage: stage),
-          ],
-        ),
+        child:
+            isDesktop ? _buildDesktopLayout(stage) : _buildMobileLayout(stage),
       ),
+    );
+  }
+
+  Widget _buildMobileLayout(RoadmapStage stage) {
+    return CustomScrollView(
+      slivers: [
+        // Stage header with progress
+        _buildStageAppBar(stage),
+
+        // Lessons list with banners and cards
+        LessonsListWidget(controller: controller, stage: stage),
+      ],
+    );
+  }
+
+  Widget _buildDesktopLayout(RoadmapStage stage) {
+    return CustomScrollView(
+      slivers: [
+        // Stage header with progress
+        _buildStageAppBar(stage),
+
+        // Desktop: Constrain width and center content
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          sliver: SliverToBoxAdapter(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: Column(
+                  children: [
+                    // Build the lessons list in a constrained width
+                    LessonsListWidget(controller: controller, stage: stage),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

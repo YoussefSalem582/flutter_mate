@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_mate/core/constants/app_colors.dart';
 import 'package:flutter_mate/core/constants/app_text_styles.dart';
+import 'package:flutter_mate/core/utils/responsive_utils.dart';
 import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
 import 'package:flutter_mate/shared/widgets/app_bar_widget.dart';
 import '../../controller/assistant_controller.dart';
@@ -17,6 +18,7 @@ class AssistantPage extends GetView<AssistantController> {
     final TextEditingController messageController = TextEditingController();
     final ScrollController scrollController = ScrollController();
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDesktop = ResponsiveUtils.isDesktop(context);
 
     return Scaffold(
       appBar: AppBarWidget(
@@ -39,216 +41,591 @@ class AssistantPage extends GetView<AssistantController> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Tips Banner
-          Obx(() {
-            if (controller.messages.isEmpty) {
-              return const SizedBox.shrink();
-            }
-            return Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.info.withOpacity(0.1),
-                    AppColors.success.withOpacity(0.1),
-                  ],
-                ),
-                border: Border(
-                  bottom: BorderSide(color: Theme.of(context).dividerColor),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.tips_and_updates,
-                    color: AppColors.info,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Pro tip: Ask specific questions for better answers!',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Theme.of(context).textTheme.bodyMedium?.color,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ).animate().fadeIn().slideY(begin: -0.3);
-          }),
+      body: ResponsiveBuilder(
+        mobile: _buildMobileLayout(
+          context,
+          messageController,
+          scrollController,
+          isDark,
+        ),
+        desktop: _buildDesktopLayout(
+          context,
+          messageController,
+          scrollController,
+          isDark,
+        ),
+      ),
+      bottomNavigationBar:
+          isDesktop ? null : const AppBottomNavBar(currentIndex: 3),
+    );
+  }
 
-          // Messages List
-          Expanded(
-            child: Obx(() {
-              if (controller.messages.isEmpty) {
-                return _buildEmptyState(context);
-              }
-
-              // Auto-scroll to bottom when new message added
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (scrollController.hasClients) {
-                  scrollController.animateTo(
-                    scrollController.position.maxScrollExtent,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  );
-                }
-              });
-
-              return ListView.builder(
-                controller: scrollController,
-                padding: const EdgeInsets.all(16),
-                itemCount: controller.messages.length,
-                itemBuilder: (context, index) {
-                  final message = controller.messages[index];
-                  return _buildMessageBubble(context, message, isDark)
-                      .animate()
-                      .fadeIn(delay: 100.ms)
-                      .slideX(
-                        begin: message.isUser ? 0.2 : -0.2,
-                        duration: 300.ms,
-                      );
-                },
-              );
-            }),
-          ),
-
-          // Typing Indicator
-          Obx(() {
-            if (!controller.isTyping.value) return const SizedBox.shrink();
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color:
-                          isDark ? AppColors.darkSurface : Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildTypingDot()
-                            .animate(
-                              onPlay: (controller) => controller.repeat(),
-                            )
-                            .fade(duration: 600.ms),
-                        const SizedBox(width: 4),
-                        _buildTypingDot()
-                            .animate(
-                              onPlay: (controller) => controller.repeat(),
-                            )
-                            .fade(duration: 600.ms, delay: 200.ms),
-                        const SizedBox(width: 4),
-                        _buildTypingDot()
-                            .animate(
-                              onPlay: (controller) => controller.repeat(),
-                            )
-                            .fade(duration: 600.ms, delay: 400.ms),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
-
-          // Quick Suggestions
-          Obx(() {
-            if (controller.messages.length > 1) return const SizedBox.shrink();
-            return Container(
-              height: 60,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: controller.suggestions.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ActionChip(
-                      avatar: const Icon(Icons.lightbulb_outline, size: 18),
-                      label: Text(
-                        controller.suggestions[index],
-                        style: AppTextStyles.bodySmall,
-                      ),
-                      onPressed: () {
-                        messageController.text = controller.suggestions[index];
-                        controller.sendMessage(messageController.text);
-                        messageController.clear();
-                      },
-                    ).animate().fadeIn(delay: (index * 100).ms).scale(),
-                  );
-                },
-              ),
-            );
-          }),
-
-          // Input Field
-          Container(
+  Widget _buildMobileLayout(
+    BuildContext context,
+    TextEditingController messageController,
+    ScrollController scrollController,
+    bool isDark,
+  ) {
+    return Column(
+      children: [
+        // Tips Banner
+        Obx(() {
+          if (controller.messages.isEmpty) {
+            return const SizedBox.shrink();
+          }
+          return Container(
+            width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.info.withOpacity(0.1),
+                  AppColors.success.withOpacity(0.1),
+                ],
+              ),
+              border: Border(
+                bottom: BorderSide(color: Theme.of(context).dividerColor),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.tips_and_updates,
+                  color: AppColors.info,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Pro tip: Ask specific questions for better answers!',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ],
             ),
-            child: SafeArea(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: messageController,
-                      decoration: InputDecoration(
-                        hintText: 'Ask me anything about Flutter...',
-                        prefixIcon: const Icon(Icons.chat_bubble_outline),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        filled: true,
-                        fillColor: isDark
-                            ? AppColors.darkSurface
-                            : Colors.grey.shade100,
-                      ),
-                      maxLines: null,
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (text) {
-                        controller.sendMessage(text);
-                        messageController.clear();
-                      },
-                    ),
+          ).animate().fadeIn().slideY(begin: -0.3);
+        }),
+
+        // Messages List
+        Expanded(
+          child: Obx(() {
+            if (controller.messages.isEmpty) {
+              return _buildEmptyState(context);
+            }
+
+            // Auto-scroll to bottom when new message added
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (scrollController.hasClients) {
+                scrollController.animateTo(
+                  scrollController.position.maxScrollExtent,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
+                );
+              }
+            });
+
+            return ListView.builder(
+              controller: scrollController,
+              padding: const EdgeInsets.all(16),
+              itemCount: controller.messages.length,
+              itemBuilder: (context, index) {
+                final message = controller.messages[index];
+                return _buildMessageBubble(context, message, isDark)
+                    .animate()
+                    .fadeIn(delay: 100.ms)
+                    .slideX(
+                      begin: message.isUser ? 0.2 : -0.2,
+                      duration: 300.ms,
+                    );
+              },
+            );
+          }),
+        ),
+
+        // Typing Indicator
+        Obx(() {
+          if (!controller.isTyping.value) return const SizedBox.shrink();
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color:
+                        isDark ? AppColors.darkSurface : Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(width: 8),
-                  IconButton.filled(
-                    icon: const Icon(Icons.send_rounded),
-                    iconSize: 24,
-                    style: IconButton.styleFrom(
-                      backgroundColor: AppColors.info,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.all(12),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildTypingDot()
+                          .animate(
+                            onPlay: (controller) => controller.repeat(),
+                          )
+                          .fade(duration: 600.ms),
+                      const SizedBox(width: 4),
+                      _buildTypingDot()
+                          .animate(
+                            onPlay: (controller) => controller.repeat(),
+                          )
+                          .fade(duration: 600.ms, delay: 200.ms),
+                      const SizedBox(width: 4),
+                      _buildTypingDot()
+                          .animate(
+                            onPlay: (controller) => controller.repeat(),
+                          )
+                          .fade(duration: 600.ms, delay: 400.ms),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+
+        // Quick Suggestions
+        Obx(() {
+          if (controller.messages.length > 1) return const SizedBox.shrink();
+          return Container(
+            height: 60,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: controller.suggestions.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ActionChip(
+                    avatar: const Icon(Icons.lightbulb_outline, size: 18),
+                    label: Text(
+                      controller.suggestions[index],
+                      style: AppTextStyles.bodySmall,
                     ),
                     onPressed: () {
+                      messageController.text = controller.suggestions[index];
                       controller.sendMessage(messageController.text);
                       messageController.clear();
                     },
-                  ),
-                ],
+                  ).animate().fadeIn(delay: (index * 100).ms).scale(),
+                );
+              },
+            ),
+          );
+        }),
+
+        // Input Field
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, -5),
               ),
+            ],
+          ),
+          child: SafeArea(
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: messageController,
+                    decoration: InputDecoration(
+                      hintText: 'Ask me anything about Flutter...',
+                      prefixIcon: const Icon(Icons.chat_bubble_outline),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      filled: true,
+                      fillColor:
+                          isDark ? AppColors.darkSurface : Colors.grey.shade100,
+                    ),
+                    maxLines: null,
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (text) {
+                      controller.sendMessage(text);
+                      messageController.clear();
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton.filled(
+                  icon: const Icon(Icons.send_rounded),
+                  iconSize: 24,
+                  style: IconButton.styleFrom(
+                    backgroundColor: AppColors.info,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.all(12),
+                  ),
+                  onPressed: () {
+                    controller.sendMessage(messageController.text);
+                    messageController.clear();
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDesktopLayout(
+    BuildContext context,
+    TextEditingController messageController,
+    ScrollController scrollController,
+    bool isDark,
+  ) {
+    return Row(
+      children: [
+        // Sidebar with suggestions and info
+        Container(
+          width: 320,
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkSurface : Colors.grey.shade50,
+            border: Border(
+              right: BorderSide(
+                color: Theme.of(context).dividerColor,
+                width: 1,
+              ),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.info.withOpacity(0.1),
+                      AppColors.success.withOpacity(0.1),
+                    ],
+                  ),
+                  border: Border(
+                    bottom: BorderSide(color: Theme.of(context).dividerColor),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.smart_toy, color: AppColors.info),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'AI Assistant',
+                        style: AppTextStyles.h3.copyWith(
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Quick Suggestions
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Quick Suggestions',
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Obx(() => Column(
+                            children: controller.suggestions.map((suggestion) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: InkWell(
+                                  onTap: () {
+                                    messageController.text = suggestion;
+                                    controller
+                                        .sendMessage(messageController.text);
+                                    messageController.clear();
+                                  },
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? AppColors.darkSurface
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Theme.of(context)
+                                            .dividerColor
+                                            .withOpacity(0.5),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.lightbulb_outline,
+                                          size: 20,
+                                          color: AppColors.info,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            suggestion,
+                                            style: AppTextStyles.bodySmall,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ).animate().fadeIn().scale(),
+                              );
+                            }).toList(),
+                          )),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Tips',
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildTipCard(
+                        context,
+                        isDark,
+                        Icons.chat,
+                        'Be Specific',
+                        'Ask detailed questions for better answers',
+                      ),
+                      const SizedBox(height: 12),
+                      _buildTipCard(
+                        context,
+                        isDark,
+                        Icons.code,
+                        'Code Examples',
+                        'Ask for code samples and explanations',
+                      ),
+                      const SizedBox(height: 12),
+                      _buildTipCard(
+                        context,
+                        isDark,
+                        Icons.lightbulb,
+                        'Best Practices',
+                        'Learn Flutter best practices',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Main chat area
+        Expanded(
+          child: Column(
+            children: [
+              // Messages List
+              Expanded(
+                child: Obx(() {
+                  if (controller.messages.isEmpty) {
+                    return _buildEmptyState(context);
+                  }
+
+                  // Auto-scroll to bottom when new message added
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (scrollController.hasClients) {
+                      scrollController.animateTo(
+                        scrollController.position.maxScrollExtent,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    }
+                  });
+
+                  return ListView.builder(
+                    controller: scrollController,
+                    padding: const EdgeInsets.all(32),
+                    itemCount: controller.messages.length,
+                    itemBuilder: (context, index) {
+                      final message = controller.messages[index];
+                      return _buildMessageBubble(context, message, isDark)
+                          .animate()
+                          .fadeIn(delay: 100.ms)
+                          .slideX(
+                            begin: message.isUser ? 0.2 : -0.2,
+                            duration: 300.ms,
+                          );
+                    },
+                  );
+                }),
+              ),
+
+              // Typing Indicator
+              Obx(() {
+                if (!controller.isTyping.value) return const SizedBox.shrink();
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? AppColors.darkSurface
+                              : Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildTypingDot()
+                                .animate(
+                                  onPlay: (controller) => controller.repeat(),
+                                )
+                                .fade(duration: 600.ms),
+                            const SizedBox(width: 4),
+                            _buildTypingDot()
+                                .animate(
+                                  onPlay: (controller) => controller.repeat(),
+                                )
+                                .fade(duration: 600.ms, delay: 200.ms),
+                            const SizedBox(width: 4),
+                            _buildTypingDot()
+                                .animate(
+                                  onPlay: (controller) => controller.repeat(),
+                                )
+                                .fade(duration: 600.ms, delay: 400.ms),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+
+              // Input Field
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -5),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: messageController,
+                        decoration: InputDecoration(
+                          hintText: 'Ask me anything about Flutter...',
+                          prefixIcon: const Icon(Icons.chat_bubble_outline),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          filled: true,
+                          fillColor: isDark
+                              ? AppColors.darkSurface
+                              : Colors.grey.shade100,
+                        ),
+                        maxLines: null,
+                        textInputAction: TextInputAction.send,
+                        onSubmitted: (text) {
+                          controller.sendMessage(text);
+                          messageController.clear();
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    IconButton.filled(
+                      icon: const Icon(Icons.send_rounded),
+                      iconSize: 24,
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.info,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.all(16),
+                      ),
+                      onPressed: () {
+                        controller.sendMessage(messageController.text);
+                        messageController.clear();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTipCard(
+    BuildContext context,
+    bool isDark,
+    IconData icon,
+    String title,
+    String description,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.5),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            size: 20,
+            color: AppColors.info,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: AppTextStyles.caption.copyWith(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.color
+                        ?.withOpacity(0.7),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
-      bottomNavigationBar: const AppBottomNavBar(currentIndex: 2),
     );
   }
 

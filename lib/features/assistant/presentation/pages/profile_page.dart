@@ -5,6 +5,7 @@ import 'package:flutter_mate/core/theme/theme_manager.dart';
 import 'package:flutter_mate/core/constants/app_colors.dart';
 import 'package:flutter_mate/core/constants/app_text_styles.dart';
 import 'package:flutter_mate/core/routes/app_routes.dart';
+import 'package:flutter_mate/core/utils/responsive_utils.dart';
 import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
 import 'package:flutter_mate/shared/widgets/app_bar_widget.dart';
 import 'package:flutter_mate/features/achievements/controller/achievement_controller.dart';
@@ -20,6 +21,7 @@ class ProfilePage extends GetView<ProgressTrackerController> {
     final themeManager = Get.find<ThemeManager>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final achievementController = Get.find<AchievementController>();
+    final isDesktop = ResponsiveUtils.isDesktop(context);
 
     return Scaffold(
       appBar: AppBarWidget(
@@ -40,102 +42,233 @@ class ProfilePage extends GetView<ProgressTrackerController> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Profile Header with Gradient
-          Obx(() {
-            final header = _buildProfileHeader(
-              context,
-              isDark,
-              achievementController,
-            );
-            return header.animate().fadeIn().scale(duration: 600.ms);
-          }),
-
-          const SizedBox(height: 24),
-
-          // Achievement Badges
-          Obx(() {
-            final badges = _buildAchievementBadges(
-              context,
-              isDark,
-              achievementController,
-            );
-            return badges.animate().fadeIn(delay: 200.ms).slideY(begin: 0.2);
-          }),
-
-          const SizedBox(height: 24),
-
-          // Quick Stats
-          Text(
-            'Statistics',
-            style: AppTextStyles.h3.copyWith(
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-              fontWeight: FontWeight.bold,
-            ),
-          ).animate().fadeIn(delay: 300.ms),
-
-          const SizedBox(height: 16),
-
-          Obx(() {
-            final stats = _buildStatsGrid(context, isDark);
-            return stats.animate().fadeIn(delay: 400.ms).slideX(begin: -0.2);
-          }),
-
-          const SizedBox(height: 24),
-
-          // Learning Preferences
-          _buildSectionHeader(
-            context,
-            'Learning Preferences',
-            Icons.tune,
-          ).animate().fadeIn(delay: 500.ms),
-
-          const SizedBox(height: 16),
-
-          _buildPreferencesCard(
-            context,
-            isDark,
-            themeManager,
-          ).animate().fadeIn(delay: 600.ms).slideX(begin: 0.2),
-
-          const SizedBox(height: 24),
-
-          // Account Settings
-          _buildSectionHeader(
-            context,
-            'Account Settings',
-            Icons.settings,
-          ).animate().fadeIn(delay: 700.ms),
-
-          const SizedBox(height: 16),
-
-          _buildSettingsCard(
-            context,
-            isDark,
-          ).animate().fadeIn(delay: 800.ms).slideX(begin: -0.2),
-
-          const SizedBox(height: 24),
-
-          // About & Support
-          _buildSectionHeader(
-            context,
-            'About & Support',
-            Icons.help_outline,
-          ).animate().fadeIn(delay: 900.ms),
-
-          const SizedBox(height: 16),
-
-          _buildAboutCard(
-            context,
-            isDark,
-          ).animate().fadeIn(delay: 1000.ms).slideX(begin: 0.2),
-
-          const SizedBox(height: 100), // Bottom padding
-        ],
+      body: ResponsiveBuilder(
+        mobile: _buildMobileLayout(
+          context,
+          isDark,
+          themeManager,
+          achievementController,
+        ),
+        desktop: _buildDesktopLayout(
+          context,
+          isDark,
+          themeManager,
+          achievementController,
+        ),
       ),
-      bottomNavigationBar: const AppBottomNavBar(currentIndex: 3),
+      bottomNavigationBar:
+          isDesktop ? null : const AppBottomNavBar(currentIndex: 3),
+    );
+  }
+
+  Widget _buildMobileLayout(
+    BuildContext context,
+    bool isDark,
+    ThemeManager themeManager,
+    AchievementController achievementController,
+  ) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // Profile Header with Gradient
+        Obx(() {
+          final header = _buildProfileHeader(
+            context,
+            isDark,
+            achievementController,
+          );
+          return header.animate().fadeIn().scale(duration: 600.ms);
+        }),
+
+        const SizedBox(height: 24),
+
+        // Achievement Badges
+        Obx(() {
+          final badges = _buildAchievementBadges(
+            context,
+            isDark,
+            achievementController,
+          );
+          return badges.animate().fadeIn(delay: 200.ms).slideY(begin: 0.2);
+        }),
+
+        const SizedBox(height: 24),
+
+        // Quick Stats
+        Text(
+          'Statistics',
+          style: AppTextStyles.h3.copyWith(
+            color: Theme.of(context).textTheme.bodyLarge?.color,
+            fontWeight: FontWeight.bold,
+          ),
+        ).animate().fadeIn(delay: 300.ms),
+
+        const SizedBox(height: 16),
+
+        Obx(() {
+          final stats = _buildStatsGrid(context, isDark);
+          return stats.animate().fadeIn(delay: 400.ms).slideX(begin: -0.2);
+        }),
+
+        const SizedBox(height: 24),
+
+        // Learning Preferences
+        _buildSectionHeader(
+          context,
+          'Learning Preferences',
+          Icons.tune,
+        ).animate().fadeIn(delay: 500.ms),
+
+        const SizedBox(height: 16),
+
+        _buildPreferencesCard(
+          context,
+          isDark,
+          themeManager,
+        ).animate().fadeIn(delay: 600.ms).slideX(begin: 0.2),
+
+        const SizedBox(height: 24),
+
+        // Account Settings
+        _buildSectionHeader(
+          context,
+          'Account Settings',
+          Icons.settings,
+        ).animate().fadeIn(delay: 700.ms),
+
+        const SizedBox(height: 16),
+
+        _buildSettingsCard(
+          context,
+          isDark,
+        ).animate().fadeIn(delay: 800.ms).slideX(begin: -0.2),
+
+        const SizedBox(height: 24),
+
+        // About & Support
+        _buildSectionHeader(
+          context,
+          'About & Support',
+          Icons.help_outline,
+        ).animate().fadeIn(delay: 900.ms),
+
+        const SizedBox(height: 16),
+
+        _buildAboutCard(
+          context,
+          isDark,
+        ).animate().fadeIn(delay: 1000.ms).slideX(begin: 0.2),
+
+        const SizedBox(height: 100), // Bottom padding
+      ],
+    );
+  }
+
+  Widget _buildDesktopLayout(
+    BuildContext context,
+    bool isDark,
+    ThemeManager themeManager,
+    AchievementController achievementController,
+  ) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1400),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left Column - Profile & Achievements
+              Expanded(
+                flex: 2,
+                child: Column(
+                  children: [
+                    Obx(() {
+                      final header = _buildProfileHeader(
+                        context,
+                        isDark,
+                        achievementController,
+                      );
+                      return header.animate().fadeIn().scale(duration: 600.ms);
+                    }),
+                    const SizedBox(height: 24),
+                    Obx(() {
+                      final badges = _buildAchievementBadges(
+                        context,
+                        isDark,
+                        achievementController,
+                      );
+                      return badges
+                          .animate()
+                          .fadeIn(delay: 200.ms)
+                          .slideY(begin: 0.2);
+                    }),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Statistics',
+                      style: AppTextStyles.h3.copyWith(
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ).animate().fadeIn(delay: 300.ms),
+                    const SizedBox(height: 16),
+                    Obx(() {
+                      final stats = _buildStatsGrid(context, isDark);
+                      return stats
+                          .animate()
+                          .fadeIn(delay: 400.ms)
+                          .slideX(begin: -0.2);
+                    }),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 32),
+              // Right Column - Settings & Preferences
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionHeader(
+                      context,
+                      'Learning Preferences',
+                      Icons.tune,
+                    ).animate().fadeIn(delay: 500.ms),
+                    const SizedBox(height: 16),
+                    _buildPreferencesCard(
+                      context,
+                      isDark,
+                      themeManager,
+                    ).animate().fadeIn(delay: 600.ms).slideX(begin: 0.2),
+                    const SizedBox(height: 32),
+                    _buildSectionHeader(
+                      context,
+                      'Account Settings',
+                      Icons.settings,
+                    ).animate().fadeIn(delay: 700.ms),
+                    const SizedBox(height: 16),
+                    _buildSettingsCard(
+                      context,
+                      isDark,
+                    ).animate().fadeIn(delay: 800.ms).slideX(begin: -0.2),
+                    const SizedBox(height: 32),
+                    _buildSectionHeader(
+                      context,
+                      'About & Support',
+                      Icons.help_outline,
+                    ).animate().fadeIn(delay: 900.ms),
+                    const SizedBox(height: 16),
+                    _buildAboutCard(
+                      context,
+                      isDark,
+                    ).animate().fadeIn(delay: 1000.ms).slideX(begin: 0.2),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -152,10 +285,10 @@ class ProfilePage extends GetView<ProgressTrackerController> {
     final totalAchievements = achievementController.achievements.length;
     final achievementsLabel =
         (achievementController.isLoading && totalAchievements == 0)
-        ? 'Loading'
-        : totalAchievements > 0
-        ? '$unlockedAchievements/$totalAchievements'
-        : unlockedAchievements.toString();
+            ? 'Loading'
+            : totalAchievements > 0
+                ? '$unlockedAchievements/$totalAchievements'
+                : unlockedAchievements.toString();
 
     return Container(
       decoration: BoxDecoration(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_mate/core/utils/responsive_utils.dart';
+import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
 import '../../controller/code_playground_controller.dart';
 import '../widgets/code_editor_widget.dart';
 import '../widgets/control_buttons_widget.dart';
@@ -38,6 +40,8 @@ class CodePlaygroundPage extends GetView<CodePlaygroundController> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveUtils.isDesktop(context);
+
     // Safety check: Ensure controller is registered before rendering
     // If not registered, show loading state instead of crashing
     if (!Get.isRegistered<CodePlaygroundController>()) {
@@ -49,6 +53,8 @@ class CodePlaygroundPage extends GetView<CodePlaygroundController> {
         ),
         // Show loading indicator while waiting for controller initialization
         body: const Center(child: CircularProgressIndicator()),
+        bottomNavigationBar:
+            isDesktop ? null : const AppBottomNavBar(currentIndex: 2),
       );
     }
 
@@ -73,27 +79,54 @@ class CodePlaygroundPage extends GetView<CodePlaygroundController> {
           ),
         ],
       ),
-      body: const Column(
-        children: [
-          // Code Editor Section (60% of screen)
-          // - Line numbers sidebar
-          // - Multi-line code input
-          // - Snippet info display
-          Expanded(flex: 3, child: CodeEditorWidget()),
-
-          // Control Buttons Row (fixed height)
-          // - Run Code: Execute current code
-          // - Reset: Restore original snippet
-          // - Clear: Clear output console
-          ControlButtonsWidget(),
-
-          // Output Console Section (40% of screen)
-          // - VS Code-style syntax highlighting
-          // - Status badge (Success/Error)
-          // - Scrollable output display
-          Expanded(flex: 2, child: OutputConsoleWidget()),
-        ],
+      body: ResponsiveBuilder(
+        mobile: _buildMobileLayout(),
+        desktop: _buildDesktopLayout(),
       ),
+      bottomNavigationBar:
+          isDesktop ? null : const AppBottomNavBar(currentIndex: 2),
+    );
+  }
+
+  Widget _buildMobileLayout() {
+    return const Column(
+      children: [
+        // Code Editor Section (60% of screen)
+        // - Line numbers sidebar
+        // - Multi-line code input
+        // - Snippet info display
+        Expanded(flex: 3, child: CodeEditorWidget()),
+
+        // Control Buttons Row (fixed height)
+        // - Run Code: Execute current code
+        // - Reset: Restore original snippet
+        // - Clear: Clear output console
+        ControlButtonsWidget(),
+
+        // Output Console Section (40% of screen)
+        // - VS Code-style syntax highlighting
+        // - Status badge (Success/Error)
+        // - Scrollable output display
+        Expanded(flex: 2, child: OutputConsoleWidget()),
+      ],
+    );
+  }
+
+  Widget _buildDesktopLayout() {
+    return Row(
+      children: [
+        // Code Editor Section (50% of screen width)
+        Expanded(
+          child: Column(
+            children: [
+              const Expanded(child: CodeEditorWidget()),
+              const ControlButtonsWidget(),
+            ],
+          ),
+        ),
+        // Output Console Section (50% of screen width)
+        const Expanded(child: OutputConsoleWidget()),
+      ],
     );
   }
 }
