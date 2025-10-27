@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_mate/core/routes/app_routes.dart';
+import 'package:flutter_mate/core/routes/custom_page_transitions.dart';
 import 'package:flutter_mate/features/onboarding/presentation/pages/splash_page.dart';
 import 'package:flutter_mate/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:flutter_mate/features/roadmap/controller/roadmap_binding.dart';
@@ -14,6 +16,9 @@ import 'package:flutter_mate/features/assistant/presentation/pages/assistant_pag
 import 'package:flutter_mate/features/assistant/presentation/pages/profile_page.dart';
 import 'package:flutter_mate/features/quiz/controller/quiz_binding.dart';
 import 'package:flutter_mate/features/quiz/presentation/pages/quiz_page.dart';
+import 'package:flutter_mate/features/achievements/presentation/pages/achievements_page.dart';
+import 'package:flutter_mate/features/code_playground/presentation/pages/code_playground_page.dart';
+import 'package:flutter_mate/features/code_playground/controller/code_playground_binding.dart';
 
 /// App pages and routes configuration
 class AppPages {
@@ -24,61 +29,76 @@ class AppPages {
       name: AppRoutes.splash,
       page: () => const SplashPage(),
       transition: Transition.fadeIn,
-      transitionDuration: const Duration(milliseconds: 400),
+      transitionDuration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOutCubic,
     ),
     GetPage(
       name: AppRoutes.onboarding,
       page: () => const OnboardingPage(),
-      transition: Transition.rightToLeftWithFade,
+      customTransition: SmoothPageTransition(),
       transitionDuration: const Duration(milliseconds: 400),
     ),
     GetPage(
       name: AppRoutes.roadmap,
       page: () => const RoadmapPage(),
       binding: RoadmapBinding(),
-      transition: Transition.fadeIn,
-      transitionDuration: const Duration(milliseconds: 400),
+      customTransition: SmoothFadeTransition(),
+      transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
       name: AppRoutes.progressTracker,
       page: () => const ProgressTrackerPage(),
       binding: ProgressTrackerBinding(),
-      transition: Transition.rightToLeftWithFade,
-      transitionDuration: const Duration(milliseconds: 400),
+      customTransition: SmoothFadeTransition(),
+      transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
       name: AppRoutes.assistant,
       page: () => const AssistantPage(),
       binding: AssistantBinding(),
-      transition: Transition.rightToLeftWithFade,
-      transitionDuration: const Duration(milliseconds: 400),
+      customTransition: SmoothFadeTransition(),
+      transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
       name: AppRoutes.profile,
       page: () => const ProfilePage(),
-      transition: Transition.rightToLeftWithFade,
-      transitionDuration: const Duration(milliseconds: 400),
+      binding: ProgressTrackerBinding(),
+      customTransition: SmoothFadeTransition(),
+      transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
       name: '/lessons',
       page: () => const LessonsPage(),
       binding: LessonBinding(),
-      transition: Transition.rightToLeftWithFade,
-      transitionDuration: const Duration(milliseconds: 400),
+      customTransition: SmoothPageTransition(),
+      transitionDuration: const Duration(milliseconds: 350),
     ),
     GetPage(
       name: '/lesson-detail',
       page: () => const LessonDetailPage(),
       binding: LessonBinding(),
-      transition: Transition.rightToLeftWithFade,
-      transitionDuration: const Duration(milliseconds: 400),
+      customTransition: SmoothPageTransition(),
+      transitionDuration: const Duration(milliseconds: 350),
     ),
     GetPage(
       name: '/quiz',
       page: () => const QuizPage(),
       binding: QuizBinding(),
-      transition: Transition.rightToLeftWithFade,
-      transitionDuration: const Duration(milliseconds: 400),
+      customTransition: SmoothPageTransition(),
+      transitionDuration: const Duration(milliseconds: 350),
+    ),
+    GetPage(
+      name: AppRoutes.achievements,
+      page: () => const AchievementsPage(),
+      customTransition: SmoothPageTransition(),
+      transitionDuration: const Duration(milliseconds: 350),
+    ),
+    GetPage(
+      name: AppRoutes.codePlayground,
+      page: () => const CodePlaygroundPage(),
+      binding: CodePlaygroundBinding(),
+      customTransition: SmoothPageTransition(),
+      transitionDuration: const Duration(milliseconds: 350),
     ),
   ];
 }

@@ -9,4 +9,6 @@ class AppRoutes {
   static const String progressTracker = '/progress-tracker';
   static const String assistant = '/assistant';
   static const String profile = '/profile';
+  static const String achievements = '/achievements';
+  static const String codePlayground = '/code-playground';
 }

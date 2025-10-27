@@ -5,6 +5,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_mate/core/routes/app_routes.dart';
 import 'package:flutter_mate/core/constants/app_colors.dart';
 import 'package:flutter_mate/core/constants/app_text_styles.dart';
+import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
+import 'package:flutter_mate/shared/widgets/app_bar_widget.dart';
 import '../../controller/assistant_controller.dart';
 
 /// AI Assistant page for guidance and tips
@@ -18,21 +20,10 @@ class AssistantPage extends GetView<AssistantController> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.info.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.smart_toy, color: AppColors.info),
-            ),
-            const SizedBox(width: 12),
-            const Text('AI Assistant'),
-          ],
-        ),
+      appBar: AppBarWidget(
+        title: 'AI Assistant',
+        icon: Icons.smart_toy,
+        iconColor: AppColors.info,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -46,11 +37,6 @@ class AssistantPage extends GetView<AssistantController> {
               );
             },
             tooltip: 'Clear chat',
-          ),
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () => Get.toNamed(AppRoutes.profile),
-            tooltip: 'Profile',
           ),
         ],
       ),
@@ -72,14 +58,12 @@ class AssistantPage extends GetView<AssistantController> {
                   ],
                 ),
                 border: Border(
-                  bottom: BorderSide(
-                    color: Theme.of(context).dividerColor,
-                  ),
+                  bottom: BorderSide(color: Theme.of(context).dividerColor),
                 ),
               ),
               child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.tips_and_updates,
                     color: AppColors.info,
                     size: 20,
@@ -145,17 +129,31 @@ class AssistantPage extends GetView<AssistantController> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkSurface : Colors.grey.shade200,
+                      color: isDark
+                          ? AppColors.darkSurface
+                          : Colors.grey.shade200,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _buildTypingDot().animate(onPlay: (controller) => controller.repeat()).fade(duration: 600.ms),
+                        _buildTypingDot()
+                            .animate(
+                              onPlay: (controller) => controller.repeat(),
+                            )
+                            .fade(duration: 600.ms),
                         const SizedBox(width: 4),
-                        _buildTypingDot().animate(onPlay: (controller) => controller.repeat()).fade(duration: 600.ms, delay: 200.ms),
+                        _buildTypingDot()
+                            .animate(
+                              onPlay: (controller) => controller.repeat(),
+                            )
+                            .fade(duration: 600.ms, delay: 200.ms),
                         const SizedBox(width: 4),
-                        _buildTypingDot().animate(onPlay: (controller) => controller.repeat()).fade(duration: 600.ms, delay: 400.ms),
+                        _buildTypingDot()
+                            .animate(
+                              onPlay: (controller) => controller.repeat(),
+                            )
+                            .fade(duration: 600.ms, delay: 400.ms),
                       ],
                     ),
                   ),
@@ -220,7 +218,9 @@ class AssistantPage extends GetView<AssistantController> {
                           borderRadius: BorderRadius.circular(24),
                         ),
                         filled: true,
-                        fillColor: isDark ? AppColors.darkSurface : Colors.grey.shade100,
+                        fillColor: isDark
+                            ? AppColors.darkSurface
+                            : Colors.grey.shade100,
                       ),
                       maxLines: null,
                       textInputAction: TextInputAction.send,
@@ -250,7 +250,7 @@ class AssistantPage extends GetView<AssistantController> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(context),
+      bottomNavigationBar: const AppBottomNavBar(currentIndex: 2),
     );
   }
 
@@ -258,7 +258,7 @@ class AssistantPage extends GetView<AssistantController> {
     return Container(
       width: 8,
       height: 8,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.info,
         shape: BoxShape.circle,
       ),
@@ -286,7 +286,9 @@ class AssistantPage extends GetView<AssistantController> {
           Text(
             'Start a conversation with your AI assistant',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              color: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.color?.withOpacity(0.7),
             ),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 300.ms),
@@ -295,7 +297,11 @@ class AssistantPage extends GetView<AssistantController> {
     );
   }
 
-  Widget _buildMessageBubble(BuildContext context, ChatMessage message, bool isDark) {
+  Widget _buildMessageBubble(
+    BuildContext context,
+    ChatMessage message,
+    bool isDark,
+  ) {
     return Align(
       alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -304,7 +310,9 @@ class AssistantPage extends GetView<AssistantController> {
           maxWidth: MediaQuery.of(context).size.width * 0.8,
         ),
         child: Column(
-          crossAxisAlignment: message.isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: message.isUser
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             // Avatar + Name
             Padding(
@@ -316,14 +324,20 @@ class AssistantPage extends GetView<AssistantController> {
                     CircleAvatar(
                       radius: 12,
                       backgroundColor: AppColors.info.withOpacity(0.2),
-                      child: const Icon(Icons.smart_toy, size: 14, color: AppColors.info),
+                      child: const Icon(
+                        Icons.smart_toy,
+                        size: 14,
+                        color: AppColors.info,
+                      ),
                     ),
                     const SizedBox(width: 6),
                   ],
                   Text(
                     message.isUser ? 'You' : 'AI Assistant',
                     style: AppTextStyles.caption.copyWith(
-                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
+                      color: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.color?.withOpacity(0.6),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -332,7 +346,11 @@ class AssistantPage extends GetView<AssistantController> {
                     CircleAvatar(
                       radius: 12,
                       backgroundColor: AppColors.info.withOpacity(0.2),
-                      child: const Icon(Icons.person, size: 14, color: AppColors.info),
+                      child: const Icon(
+                        Icons.person,
+                        size: 14,
+                        color: AppColors.info,
+                      ),
                     ),
                   ],
                 ],
@@ -350,11 +368,17 @@ class AssistantPage extends GetView<AssistantController> {
                 );
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   gradient: message.isUser
                       ? LinearGradient(
-                          colors: [AppColors.info, AppColors.info.withOpacity(0.8)],
+                          colors: [
+                            AppColors.info,
+                            AppColors.info.withOpacity(0.8),
+                          ],
                         )
                       : null,
                   color: message.isUser
@@ -396,7 +420,8 @@ class AssistantPage extends GetView<AssistantController> {
                             fontSize: 10,
                             color: message.isUser
                                 ? Colors.white.withOpacity(0.7)
-                                : Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                                : Theme.of(context).textTheme.bodyMedium?.color
+                                      ?.withOpacity(0.5),
                           ),
                         ),
                         if (message.isUser) ...[
@@ -421,36 +446,5 @@ class AssistantPage extends GetView<AssistantController> {
 
   String _formatTime(DateTime time) {
     return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-  }
-
-  Widget _buildBottomNav(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: 2,
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Roadmap'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.track_changes),
-          label: 'Progress',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.assistant),
-          label: 'Assistant',
-        ),
-      ],
-      onTap: (index) {
-        switch (index) {
-          case 0:
-            Get.toNamed(AppRoutes.roadmap);
-            break;
-          case 1:
-            Get.toNamed(AppRoutes.progressTracker);
-            break;
-          case 2:
-            // Already on assistant
-            break;
-        }
-      },
-    );
   }
 }

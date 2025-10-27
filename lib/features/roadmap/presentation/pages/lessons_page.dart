@@ -1,11 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_text_styles.dart';
+import '../../../../shared/widgets/widgets.dart';
 import '../../controller/lesson_controller.dart';
 import '../../data/models/roadmap_stage.dart';
+import '../widgets/shared/lesson_app_bar.dart';
+import '../widgets/lessons_page/widgets.dart';
 
+/// Lessons page displaying all lessons for a specific roadmap stage.
+///
+/// **Features:**
+/// - Stage-themed collapsible app bar with progress tracking
+/// - Advanced mode toggle to unlock all lessons
+/// - Pull-to-refresh functionality
+/// - Conditional banners (welcome or advanced mode)
+/// - Lesson cards with completion status, duration, and difficulty
+/// - Navigation to lesson detail pages
+///
+/// **Architecture**: Widget composition pattern
+/// The page acts as a coordinator, delegating rendering to specialized widgets:
+/// - LessonAppBar: Shared collapsible header with stage branding
+/// - CustomProgressBar: Stage progress indicator in app bar bottom
+/// - LessonsListWidget: Main list with loading/empty states
+///   - AdvancedModeBanner: Purple banner for unlocked mode
+///   - WelcomeBanner: Greeting for first-time users
+///   - LessonCard: Individual lesson items with metadata
+///
+/// **State Management**: GetX with LessonController
+/// - Extends GetView<LessonController> for automatic controller access
+/// - Controller manages lessons, completion state, and advanced mode
+/// - Reactive UI updates using Obx in widgets
+///
+/// **Navigation Flow:**
+/// 1. Receives RoadmapStage as Get.arguments
+/// 2. Loads lessons for stage on page open
+/// 3. Navigates to lesson detail on card tap
+/// 4. Refreshes lesson list on return from detail page
 class LessonsPage extends GetView<LessonController> {
   const LessonsPage({super.key});
 
@@ -29,44 +58,38 @@ class LessonsPage extends GetView<LessonController> {
           );
         },
         child: CustomScrollView(
-          slivers: [_buildAppBar(context, stage), _buildLessonsList(context)],
+          slivers: [
+            // Stage header with progress
+            _buildStageAppBar(stage),
+
+            // Lessons list with banners and cards
+            LessonsListWidget(controller: controller, stage: stage),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildAppBar(BuildContext context, RoadmapStage stage) {
-    return SliverAppBar(
-      expandedHeight: 200,
-      pinned: true,
+  /// Build stage app bar with progress indicator
+  Widget _buildStageAppBar(RoadmapStage stage) {
+    return LessonAppBar(
+      title: stage.title,
       backgroundColor: stage.color,
-      foregroundColor: Colors.white,
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(
-          stage.title,
-          style: AppTextStyles.h3.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [stage.color, stage.color.withOpacity(0.7)],
+      icon: stage.icon,
+      actions: [
+        // Advanced mode toggle
+        Obx(() {
+          final isAdvanced = controller.advancedMode;
+          return IconButton(
+            icon: Icon(
+              isAdvanced ? Icons.rocket_launch : Icons.lock_open,
+              color: Colors.white,
             ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 40),
-              Icon(stage.icon, size: 64, color: Colors.white.withOpacity(0.9)),
-              const SizedBox(height: 8),
-            ],
-          ),
-        ),
-      ),
+            tooltip: isAdvanced ? 'Advanced Mode ON' : 'Enable Advanced Mode',
+            onPressed: () => controller.toggleAdvancedMode(),
+          );
+        }),
+      ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(60),
         child: Container(
@@ -77,393 +100,14 @@ class LessonsPage extends GetView<LessonController> {
             final completed = controller.completedCount;
             final total = controller.lessons.length;
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Progress: $completed/$total lessons',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      '${(percentage * 100).toStringAsFixed(0)}%',
-                      style: AppTextStyles.h3.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(
-                    value: percentage,
-                    minHeight: 8,
-                    backgroundColor: Colors.white.withOpacity(0.3),
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      Colors.white,
-                    ),
-                  ),
-                ),
-              ],
+            return CustomProgressBar(
+              label: 'Progress: $completed/$total lessons',
+              value: percentage,
+              color: Colors.white,
+              backgroundColor: Colors.white.withOpacity(0.3),
+              textColor: Colors.white,
             );
           }),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLessonsList(BuildContext context) {
-    return Obx(() {
-      if (controller.isLoading) {
-        return const SliverFillRemaining(
-          child: Center(child: CircularProgressIndicator()),
-        );
-      }
-
-      if (controller.lessons.isEmpty) {
-        return SliverFillRemaining(
-          child: Center(
-            child: Text(
-              'No lessons available',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: Theme.of(context).textTheme.bodyMedium?.color,
-              ),
-            ),
-          ),
-        );
-      }
-
-      return SliverPadding(
-        padding: const EdgeInsets.all(16),
-        sliver: SliverList(
-          delegate: SliverChildBuilderDelegate((context, index) {
-            final lesson = controller.lessons[index];
-            final isCompleted = controller.isLessonCompleted(lesson.id);
-            final canAccess = controller.canAccessLesson(lesson);
-
-            // Add a welcome message for the first lesson if no lessons completed
-            if (index == 0 && controller.completedCount == 0) {
-              return Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.info.withOpacity(0.1),
-                          AppColors.success.withOpacity(0.1),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: AppColors.info.withOpacity(0.3),
-                        width: 2,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.info.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.rocket_launch,
-                            color: AppColors.info,
-                            size: 32,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Start Your Journey! 🚀',
-                                style: AppTextStyles.h3.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Tap the first lesson below to begin learning Flutter',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.color
-                                      ?.withOpacity(0.7),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ).animate().fadeIn().slideY(begin: -0.2),
-                  _buildLessonCard(
-                        context,
-                        lesson,
-                        isCompleted,
-                        canAccess,
-                        index,
-                      )
-                      .animate()
-                      .fadeIn(duration: 300.ms, delay: 100.ms)
-                      .slideX(begin: 0.2, duration: 300.ms, delay: 100.ms),
-                ],
-              );
-            }
-
-            return _buildLessonCard(
-                  context,
-                  lesson,
-                  isCompleted,
-                  canAccess,
-                  index,
-                )
-                .animate()
-                .fadeIn(duration: 300.ms, delay: (index * 50).ms)
-                .slideX(begin: 0.2, duration: 300.ms, delay: (index * 50).ms);
-          }, childCount: controller.lessons.length),
-        ),
-      );
-    });
-  }
-
-  Widget _buildLessonCard(
-    BuildContext context,
-    lesson,
-    bool isCompleted,
-    bool canAccess,
-    int index,
-  ) {
-    final stage = Get.arguments as RoadmapStage;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isCompleted
-              ? stage.color.withOpacity(0.5)
-              : Colors.transparent,
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: canAccess
-              ? () async {
-                  await Get.toNamed('/lesson-detail', arguments: lesson);
-                  // Refresh lessons after returning from detail page
-                  await controller.loadLessonsByStage(stage.id);
-                }
-              : () {
-                  Get.snackbar(
-                    'Locked',
-                    'Complete the prerequisite lessons first',
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: Colors.orange,
-                    colorText: Colors.white,
-                    duration: const Duration(seconds: 2),
-                  );
-                },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    // Lesson number badge
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: isCompleted
-                            ? stage.color
-                            : stage.color.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(
-                        child: isCompleted
-                            ? const Icon(
-                                Icons.check_rounded,
-                                color: Colors.white,
-                                size: 24,
-                              )
-                            : Text(
-                                '${index + 1}',
-                                style: AppTextStyles.h3.copyWith(
-                                  color: stage.color,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            lesson.title,
-                            style: AppTextStyles.h3.copyWith(
-                              color: canAccess
-                                  ? Theme.of(context).textTheme.bodyLarge?.color
-                                  : Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.color
-                                        ?.withOpacity(0.5),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              _buildInfoChip(
-                                context,
-                                Icons.schedule_rounded,
-                                '${lesson.duration} min',
-                                stage.color,
-                              ),
-                              const SizedBox(width: 8),
-                              _buildDifficultyChip(context, lesson.difficulty),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (!canAccess)
-                      Icon(
-                        Icons.lock_rounded,
-                        color: Theme.of(
-                          context,
-                        ).textTheme.bodyMedium?.color?.withOpacity(0.3),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  lesson.description,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: Theme.of(context).textTheme.bodyMedium?.color
-                        ?.withOpacity(canAccess ? 0.8 : 0.5),
-                    height: 1.5,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (lesson.prerequisites.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      Icon(
-                        Icons.link_rounded,
-                        size: 16,
-                        color: Theme.of(
-                          context,
-                        ).textTheme.bodyMedium?.color?.withOpacity(0.5),
-                      ),
-                      Text(
-                        '${lesson.prerequisites.length} prerequisite${lesson.prerequisites.length > 1 ? 's' : ''}',
-                        style: AppTextStyles.caption.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).textTheme.bodyMedium?.color?.withOpacity(0.6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoChip(
-    BuildContext context,
-    IconData icon,
-    String label,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: AppTextStyles.caption.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDifficultyChip(BuildContext context, String difficulty) {
-    Color color;
-    switch (difficulty.toLowerCase()) {
-      case 'easy':
-        color = Colors.green;
-        break;
-      case 'medium':
-        color = Colors.orange;
-        break;
-      case 'hard':
-        color = Colors.red;
-        break;
-      default:
-        color = Colors.grey;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        difficulty.toUpperCase(),
-        style: AppTextStyles.caption.copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
-          fontSize: 10,
         ),
       ),
     );

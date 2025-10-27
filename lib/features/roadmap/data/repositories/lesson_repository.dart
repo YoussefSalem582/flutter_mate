@@ -19,10 +19,17 @@ abstract class LessonRepository {
 
   /// Get completion percentage for a stage
   Future<double> getStageCompletionPercentage(String stageId);
+
+  /// Get advanced mode status
+  Future<bool> getAdvancedMode();
+
+  /// Set advanced mode status
+  Future<void> setAdvancedMode(bool enabled);
 }
 
 class LessonRepositoryImpl implements LessonRepository {
   static const _completedLessonsKey = 'completed_lessons';
+  static const _advancedModeKey = 'advanced_mode';
   final SharedPreferences _prefs;
 
   LessonRepositoryImpl(this._prefs);
@@ -404,6 +411,16 @@ class LessonRepositoryImpl implements LessonRepository {
         .length;
 
     return completedCount / stageLessons.length;
+  }
+
+  @override
+  Future<bool> getAdvancedMode() async {
+    return _prefs.getBool(_advancedModeKey) ?? false;
+  }
+
+  @override
+  Future<void> setAdvancedMode(bool enabled) async {
+    await _prefs.setBool(_advancedModeKey, enabled);
   }
 
   Future<List<String>> _getCompletedLessons() async {

@@ -5,19 +5,27 @@ import 'package:flutter_mate/core/theme/theme_manager.dart';
 import 'package:flutter_mate/core/constants/app_colors.dart';
 import 'package:flutter_mate/core/constants/app_text_styles.dart';
 import 'package:flutter_mate/core/routes/app_routes.dart';
+import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
+import 'package:flutter_mate/shared/widgets/app_bar_widget.dart';
+import 'package:flutter_mate/features/achievements/controller/achievement_controller.dart';
+import 'package:flutter_mate/features/achievements/data/models/achievement.dart';
+import 'package:flutter_mate/features/progress_tracker/controller/progress_tracker_controller.dart';
 
 /// Profile page showing user stats and settings
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends GetView<ProgressTrackerController> {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final themeManager = Get.find<ThemeManager>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final achievementController = Get.find<AchievementController>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile & Settings'),
+      appBar: AppBarWidget(
+        title: 'Profile & Settings',
+        icon: Icons.person,
+        iconColor: AppColors.info,
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
@@ -36,18 +44,26 @@ class ProfilePage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           // Profile Header with Gradient
-          _buildProfileHeader(
-            context,
-            isDark,
-          ).animate().fadeIn().scale(duration: 600.ms),
+          Obx(() {
+            final header = _buildProfileHeader(
+              context,
+              isDark,
+              achievementController,
+            );
+            return header.animate().fadeIn().scale(duration: 600.ms);
+          }),
 
           const SizedBox(height: 24),
 
           // Achievement Badges
-          _buildAchievementBadges(
-            context,
-            isDark,
-          ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
+          Obx(() {
+            final badges = _buildAchievementBadges(
+              context,
+              isDark,
+              achievementController,
+            );
+            return badges.animate().fadeIn(delay: 200.ms).slideY(begin: 0.2);
+          }),
 
           const SizedBox(height: 24),
 
@@ -62,10 +78,10 @@ class ProfilePage extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          _buildStatsGrid(
-            context,
-            isDark,
-          ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.2),
+          Obx(() {
+            final stats = _buildStatsGrid(context, isDark);
+            return stats.animate().fadeIn(delay: 400.ms).slideX(begin: -0.2);
+          }),
 
           const SizedBox(height: 24),
 
@@ -119,11 +135,28 @@ class ProfilePage extends StatelessWidget {
           const SizedBox(height: 100), // Bottom padding
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(context),
+      bottomNavigationBar: const AppBottomNavBar(currentIndex: 3),
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context, bool isDark) {
+  Widget _buildProfileHeader(
+    BuildContext context,
+    bool isDark,
+    AchievementController achievementController,
+  ) {
+    const xpToNextLevel = 1000;
+    final currentXP = controller.xpPoints.value;
+    final currentLevel = (currentXP / xpToNextLevel).floor() + 1;
+    final unlockedAchievements =
+        achievementController.unlockedAchievements.length;
+    final totalAchievements = achievementController.achievements.length;
+    final achievementsLabel =
+        (achievementController.isLoading && totalAchievements == 0)
+        ? 'Loading'
+        : totalAchievements > 0
+        ? '$unlockedAchievements/$totalAchievements'
+        : unlockedAchievements.toString();
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -152,7 +185,7 @@ class ProfilePage extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 3),
                   ),
-                  child: CircleAvatar(
+                  child: const CircleAvatar(
                     radius: 50,
                     backgroundColor: Colors.white,
                     child: Icon(Icons.person, size: 50, color: AppColors.info),
@@ -217,19 +250,27 @@ class ProfilePage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildHeaderStat('Level', '3', Icons.military_tech),
+                  _buildHeaderStat(
+                    'Level',
+                    '$currentLevel',
+                    Icons.military_tech,
+                  ),
                   Container(
                     width: 1,
                     height: 40,
                     color: Colors.white.withOpacity(0.3),
                   ),
-                  _buildHeaderStat('Rank', '#247', Icons.leaderboard),
+                  _buildHeaderStat(
+                    'Achievements',
+                    achievementsLabel,
+                    Icons.emoji_events,
+                  ),
                   Container(
                     width: 1,
                     height: 40,
                     color: Colors.white.withOpacity(0.3),
                   ),
-                  _buildHeaderStat('XP', '350', Icons.stars),
+                  _buildHeaderStat('XP', '$currentXP', Icons.stars),
                 ],
               ),
             ),
@@ -261,21 +302,72 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildAchievementBadges(BuildContext context, bool isDark) {
-    final badges = [
-      {
-        'icon': Icons.emoji_events,
-        'label': 'First Lesson',
-        'color': Colors.amber,
-      },
-      {
-        'icon': Icons.local_fire_department,
-        'label': '7 Day Streak',
-        'color': Colors.orange,
-      },
-      {'icon': Icons.code, 'label': 'First Project', 'color': Colors.blue},
-      {'icon': Icons.star, 'label': 'Quick Learner', 'color': Colors.purple},
-    ];
+  Widget _buildAchievementBadges(
+    BuildContext context,
+    bool isDark,
+    AchievementController achievementController,
+  ) {
+    final unlocked = achievementController.unlockedAchievements;
+    final total = achievementController.achievements.length;
+    final isLoading = achievementController.isLoading;
+    final textScale = MediaQuery.of(context).textScaleFactor;
+    final adjustedScale = textScale.clamp(0.9, 2.4);
+    final scaleForSize = adjustedScale < 1.0 ? 1.0 : adjustedScale;
+    final baseBadgeHeight = 130.0;
+    final badgeHeight = baseBadgeHeight * scaleForSize;
+
+    final displayBadges = unlocked.take(6).toList();
+
+    Widget content;
+    if (isLoading && total == 0) {
+      content = SizedBox(
+        height: badgeHeight,
+        child: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.info),
+          ),
+        ),
+      );
+    } else if (displayBadges.isEmpty) {
+      content = Container(
+        height: badgeHeight,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkSurface : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Theme.of(context).dividerColor.withOpacity(0.3),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Text(
+          'Keep learning to unlock achievements!',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: Theme.of(context).textTheme.bodyMedium?.color,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+    } else {
+      content = SizedBox(
+        height: badgeHeight,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: displayBadges.length,
+          separatorBuilder: (context, index) => const SizedBox(width: 12),
+          itemBuilder: (context, index) {
+            final achievement = displayBadges[index];
+            final progress = achievementController.userProgress[achievement.id];
+            return _buildAchievementBadge(
+              context,
+              achievement,
+              progress,
+              isDark,
+            );
+          },
+        ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,53 +384,45 @@ class ProfilePage extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                Get.snackbar(
-                  'Achievements',
-                  'View all your unlocked achievements',
-                  snackPosition: SnackPosition.BOTTOM,
-                );
+                Get.toNamed(AppRoutes.achievements);
               },
-              child: const Text('View All'),
+              child: Text(
+                total > 0 ? 'View All (${unlocked.length}/$total)' : 'View All',
+              ),
             ),
           ],
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 100,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: badges.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              final badge = badges[index];
-              return _buildBadge(
-                context,
-                badge['icon'] as IconData,
-                badge['label'] as String,
-                badge['color'] as Color,
-                isDark,
-              );
-            },
-          ),
-        ),
+        content,
       ],
     );
   }
 
-  Widget _buildBadge(
+  Widget _buildAchievementBadge(
     BuildContext context,
-    IconData icon,
-    String label,
-    Color color,
+    Achievement achievement,
+    AchievementProgress? progress,
     bool isDark,
   ) {
+    final unlocked = progress?.isUnlocked ?? false;
+    final color = _badgeColor(achievement.category);
+    final textScale = MediaQuery.textScaleFactorOf(context).clamp(0.9, 2.4);
+    final baseCardWidth = 120.0;
+    final scaleForWidth = textScale < 1.0 ? 1.0 : textScale;
+    final cardWidth = baseCardWidth * scaleForWidth;
+
     return Container(
-      width: 100,
+      width: cardWidth,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3), width: 2),
+        border: Border.all(
+          color: unlocked
+              ? color.withOpacity(0.4)
+              : Theme.of(context).dividerColor.withOpacity(0.2),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
@@ -351,53 +435,86 @@ class ProfilePage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withOpacity(unlocked ? 0.2 : 0.08),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Text(achievement.icon, style: const TextStyle(fontSize: 24)),
           ),
           const SizedBox(height: 8),
           Text(
-            label,
+            achievement.title,
             textAlign: TextAlign.center,
             style: AppTextStyles.caption.copyWith(
               color: Theme.of(context).textTheme.bodyMedium?.color,
               fontWeight: FontWeight.w600,
+              fontSize: 11,
+              height: 1.2,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '+${achievement.xpReward} XP',
+            style: AppTextStyles.caption.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
     );
   }
 
+  Color _badgeColor(String category) {
+    switch (category) {
+      case 'lessons':
+        return AppColors.info;
+      case 'quizzes':
+        return Colors.purple;
+      case 'streak':
+        return Colors.orange;
+      case 'special':
+        return AppColors.success;
+      default:
+        return Colors.blueGrey;
+    }
+  }
+
   Widget _buildStatsGrid(BuildContext context, bool isDark) {
+    final completedLessons = controller.lessonsCompleted.value;
+    final totalLessons = controller.totalLessons.value;
+    final projects = controller.projectsCompleted.value;
+    final streak = controller.dayStreak.value;
+    final xp = controller.xpPoints.value;
+
     final stats = [
       {
-        'value': '15',
-        'label': 'Lessons',
+        'value': totalLessons > 0
+            ? '$completedLessons/$totalLessons'
+            : '$completedLessons',
+        'label': 'Lessons Completed',
         'icon': Icons.menu_book,
         'color': AppColors.info,
       },
       {
-        'value': '5',
-        'label': 'Projects',
+        'value': projects.toString(),
+        'label': 'Projects Built',
         'icon': Icons.construction,
         'color': AppColors.success,
       },
       {
-        'value': '8',
-        'label': 'Day Streak',
+        'value': streak == 1 ? '1 day' : '$streak days',
+        'label': 'Learning Streak',
         'icon': Icons.local_fire_department,
         'color': Colors.orange,
       },
       {
-        'value': '12h',
-        'label': 'Time Spent',
-        'icon': Icons.access_time,
+        'value': xp.toString(),
+        'label': 'Total XP',
+        'icon': Icons.stars,
         'color': Colors.purple,
       },
     ];
@@ -409,7 +526,7 @@ class ProfilePage extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 1.5,
+        childAspectRatio: 1.1,
       ),
       itemCount: stats.length,
       itemBuilder: (context, index) {
@@ -435,7 +552,7 @@ class ProfilePage extends StatelessWidget {
     bool isDark,
   ) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -451,23 +568,27 @@ class ProfilePage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
+          Icon(icon, color: color, size: 26),
+          const SizedBox(height: 6),
           Text(
             value,
-            style: AppTextStyles.h2.copyWith(
+            style: AppTextStyles.h3.copyWith(
               color: color,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             label,
+            textAlign: TextAlign.center,
             style: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(
                 context,
               ).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              height: 1.2,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -754,41 +875,6 @@ class ProfilePage extends StatelessWidget {
         color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.3),
       ),
       onTap: onTap,
-    );
-  }
-
-  Widget _buildBottomNav(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: 3,
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Roadmap'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.track_changes),
-          label: 'Progress',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.assistant),
-          label: 'Assistant',
-        ),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-      ],
-      onTap: (index) {
-        switch (index) {
-          case 0:
-            Get.toNamed(AppRoutes.roadmap);
-            break;
-          case 1:
-            Get.toNamed(AppRoutes.progressTracker);
-            break;
-          case 2:
-            Get.toNamed(AppRoutes.assistant);
-            break;
-          case 3:
-            // Already on profile
-            break;
-        }
-      },
     );
   }
 }

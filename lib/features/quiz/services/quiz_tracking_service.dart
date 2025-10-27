@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../achievements/controller/achievement_controller.dart';
 
 /// Service for tracking quiz completion and scores
 class QuizTrackingService extends GetxService {
@@ -70,6 +71,11 @@ class QuizTrackingService extends GetxService {
     );
 
     _updateStats();
+
+    // Track quiz achievements
+    final achievementController = Get.find<AchievementController>();
+    final isPerfectScore = correctAnswers == totalQuestions;
+    await achievementController.onQuizCompleted(isPerfectScore);
   }
 
   void _updateStats() {

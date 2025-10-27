@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../data/models/lesson.dart';
 import '../data/repositories/lesson_repository.dart';
+import '../../achievements/controller/achievement_controller.dart';
 
 class LessonController extends GetxController {
   final LessonRepository _repository;
@@ -11,11 +13,13 @@ class LessonController extends GetxController {
   final _completionStatus = <String, bool>{}.obs;
   final _isLoading = false.obs;
   final _currentStageId = ''.obs;
+  final _advancedMode = false.obs; // Advanced user mode to skip prerequisites
 
   List<Lesson> get lessons => _lessons;
   Map<String, bool> get completionStatus => _completionStatus;
   bool get isLoading => _isLoading.value;
   String get currentStageId => _currentStageId.value;
+  bool get advancedMode => _advancedMode.value;
 
   // Computed properties
   int get completedCount => _completionStatus.values.where((v) => v).length;
@@ -26,6 +30,36 @@ class LessonController extends GetxController {
   void onInit() {
     super.onInit();
     _loadCompletionStatus();
+    _loadAdvancedMode();
+  }
+
+  Future<void> _loadAdvancedMode() async {
+    final mode = await _repository.getAdvancedMode();
+    _advancedMode.value = mode;
+  }
+
+  Future<void> toggleAdvancedMode() async {
+    _advancedMode.value = !_advancedMode.value;
+    await _repository.setAdvancedMode(_advancedMode.value);
+
+    // Track advanced mode achievement
+    if (_advancedMode.value) {
+      final achievementController = Get.find<AchievementController>();
+      await achievementController.onAdvancedModeEnabled();
+    }
+
+    Get.snackbar(
+      _advancedMode.value
+          ? '🚀 Advanced Mode Enabled'
+          : '📚 Normal Mode Enabled',
+      _advancedMode.value
+          ? 'All lessons are now unlocked! You can access any lesson.'
+          : 'Prerequisites are now required to access lessons.',
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 3),
+      backgroundColor: _advancedMode.value ? Colors.purple : Colors.blue,
+      colorText: Colors.white,
+    );
   }
 
   Future<void> loadLessonsByStage(String stageId) async {
@@ -60,6 +94,10 @@ class LessonController extends GetxController {
       await _repository.markLessonCompleted(lessonId);
       _completionStatus[lessonId] = true;
 
+      // Track lesson completion achievement
+      final achievementController = Get.find<AchievementController>();
+      await achievementController.onLessonCompleted();
+
       Get.snackbar(
         'Great Job! 🎉',
         'Lesson marked as completed',
@@ -77,6 +115,9 @@ class LessonController extends GetxController {
   }
 
   bool canAccessLesson(Lesson lesson) {
+    // Advanced mode unlocks all lessons
+    if (_advancedMode.value) return true;
+
     // Check if all prerequisites are completed
     if (lesson.prerequisites.isEmpty) return true;
 
