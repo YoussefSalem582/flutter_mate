@@ -34,6 +34,15 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
       
+      - name: Setup Firebase options
+        run: |
+          # Option 1: Use example file for demo deployment
+          # cp lib/firebase_options.dart.example lib/firebase_options.dart
+          
+          # Option 2: Use GitHub Secrets (current approach)
+          # Add FIREBASE_OPTIONS_DART secret in GitHub: Settings > Secrets > Actions
+          echo "${{ secrets.FIREBASE_OPTIONS_DART }}" > lib/firebase_options.dart
+      
       - name: Build web
         run: flutter build web --release --base-href /flutter_mate/
       
