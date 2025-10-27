@@ -1,6 +1,8 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_mate/core/routes/app_routes.dart';
+import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
 
 /// Splash screen shown on app launch.
 class SplashPage extends StatefulWidget {
@@ -51,7 +53,24 @@ class _SplashPageState extends State<SplashPage>
   Future<void> _navigateToNext() async {
     await Future.delayed(const Duration(milliseconds: 2500));
     if (!mounted) return;
-    Get.offAllNamed(AppRoutes.onboarding);
+
+    // Check if user has seen onboarding
+    final prefs = Get.find<SharedPreferences>();
+    final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+
+    // Check authentication status
+    final authController = Get.find<AuthController>();
+
+    if (!hasSeenOnboarding) {
+      // First time user - show onboarding
+      Get.offAllNamed(AppRoutes.onboarding);
+    } else if (authController.isAuthenticated.value) {
+      // User is logged in - go to roadmap (home)
+      Get.offAllNamed(AppRoutes.roadmap);
+    } else {
+      // User has seen onboarding but not logged in - go to login
+      Get.offAllNamed(AppRoutes.login);
+    }
   }
 
   @override
@@ -135,8 +154,8 @@ class _SplashPageState extends State<SplashPage>
                           child: LinearProgressIndicator(
                             value: value,
                             minHeight: 4,
-                            backgroundColor: theme.colorScheme.onSurface
-                                .withOpacity(0.1),
+                            backgroundColor:
+                                theme.colorScheme.onSurface.withOpacity(0.1),
                             valueColor: AlwaysStoppedAnimation<Color>(primary),
                           ),
                         ),

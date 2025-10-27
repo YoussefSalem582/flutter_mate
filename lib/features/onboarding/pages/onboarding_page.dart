@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_mate/core/routes/app_routes.dart';
 import '../data/onboarding_data.dart';
 import '../widgets/widgets.dart';
@@ -35,7 +36,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         curve: Curves.easeInOut,
       );
     } else {
-      Get.offAllNamed(AppRoutes.roadmap);
+      _completeOnboarding();
     }
   }
 
@@ -49,7 +50,16 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   void _skipToEnd() {
-    Get.offAllNamed(AppRoutes.roadmap);
+    _completeOnboarding();
+  }
+
+  void _completeOnboarding() {
+    // Mark onboarding as completed
+    final prefs = Get.find<SharedPreferences>();
+    prefs.setBool('hasSeenOnboarding', true);
+
+    // Navigate to login page
+    Get.offAllNamed(AppRoutes.login);
   }
 
   @override

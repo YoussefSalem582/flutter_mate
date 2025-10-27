@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verified - Flutter Mate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 60px 40px;
+            text-align: center;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: scaleIn 0.5s ease-out 0.2s both;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .checkmark {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 3;
+            stroke: white;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px white;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+
+        .checkmark-circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 3;
+            stroke-miterlimit: 10;
+            stroke: white;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark-check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #2d3748;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 18px;
+            color: #718096;
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+
+        .app-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 16px 40px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .app-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .app-link:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            margin-top: 40px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-box p {
+            font-size: 14px;
+            color: #4a5568;
+            margin: 0;
+            text-align: left;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 40px 24px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            p {
+                font-size: 16px;
+            }
+
+            .success-icon {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🚀 Flutter Mate</div>
+        
+        <div class="success-icon">
+            <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+        </div>
+
+        <h1>✅ Email Verified!</h1>
+        <p>
+            Your email has been successfully verified. You're all set to start your Flutter learning journey!
+        </p>
+
+        <a href="fluttermate://verified" class="app-link" onclick="openApp()">
+            Return to App
+        </a>
+
+        <div class="info-box">
+            <p>
+                <strong>💡 What's Next?</strong><br>
+                Return to the Flutter Mate app and start exploring amazing Flutter tutorials, 
+                interactive lessons, and build real-world projects!
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Try to open the app using deep link
+        function openApp() {
+            // Try to open the app
+            window.location.href = 'fluttermate://verified';
+            
+            // Fallback: Show message after a short delay
+            setTimeout(function() {
+                alert('Please return to the Flutter Mate app to continue. If the app doesn\'t open automatically, open it manually from your device.');
+            }, 1500);
+        }
+
+        // Auto-attempt to open app after 2 seconds
+        setTimeout(function() {
+            // Try deep link
+            window.location.href = 'fluttermate://verified';
+        }, 2000);
+    </script>
+</body>
+</html>

@@ -33,6 +33,21 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# API Keys and Secrets - NEVER COMMIT THESE!
+lib/core/config/api_keys.dart
+*.env
+.env
+.env.local
+.env.*.local
+secrets.json
+api_keys.json
+
+# Firebase Configuration Files - SENSITIVE!
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+web/index.html
+
 # Symbolication related
 app.*.symbols
 

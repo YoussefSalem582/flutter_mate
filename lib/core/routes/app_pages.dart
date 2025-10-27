@@ -4,6 +4,10 @@ import 'package:flutter_mate/core/routes/app_routes.dart';
 import 'package:flutter_mate/core/routes/custom_page_transitions.dart';
 import 'package:flutter_mate/features/onboarding/pages/splash_page.dart';
 import 'package:flutter_mate/features/onboarding/pages/onboarding_page.dart';
+import 'package:flutter_mate/features/auth/presentation/pages/login_page.dart';
+import 'package:flutter_mate/features/auth/presentation/pages/signup_page.dart';
+import 'package:flutter_mate/features/auth/presentation/pages/forgot_password_page.dart';
+import 'package:flutter_mate/features/auth/presentation/pages/email_verification_page.dart';
 import 'package:flutter_mate/features/roadmap/controller/roadmap_binding.dart';
 import 'package:flutter_mate/features/roadmap/controller/lesson_binding.dart';
 import 'package:flutter_mate/features/roadmap/presentation/pages/roadmap_page.dart';
@@ -38,6 +42,34 @@ class AppPages {
       customTransition: SmoothPageTransition(),
       transitionDuration: const Duration(milliseconds: 400),
     ),
+
+    // Authentication routes
+    GetPage(
+      name: AppRoutes.login,
+      page: () => const LoginPage(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.signup,
+      page: () => const SignUpPage(),
+      customTransition: SmoothPageTransition(),
+      transitionDuration: const Duration(milliseconds: 350),
+    ),
+    GetPage(
+      name: AppRoutes.forgotPassword,
+      page: () => const ForgotPasswordPage(),
+      customTransition: SmoothPageTransition(),
+      transitionDuration: const Duration(milliseconds: 350),
+    ),
+    GetPage(
+      name: AppRoutes.emailVerification,
+      page: () => const EmailVerificationPage(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+
+    // Feature routes
     GetPage(
       name: AppRoutes.roadmap,
       page: () => const RoadmapPage(),
