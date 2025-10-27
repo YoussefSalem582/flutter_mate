@@ -43,9 +43,14 @@ class AuthService {
 
       return AuthResult.success(credential.user!);
     } on FirebaseAuthException catch (e) {
-      return AuthResult.failure(_getAuthErrorMessage(e.code));
+      // Log error details for debugging
+      // ignore: avoid_print
+      print('Firebase Auth Error [Sign Up]: ${e.code} - ${e.message}');
+      return AuthResult.failure(_getAuthErrorMessage(e.code, e.message));
     } catch (e) {
-      return AuthResult.failure('An unexpected error occurred: $e');
+      // ignore: avoid_print
+      print('Unexpected Error [Sign Up]: $e');
+      return AuthResult.failure('Sign-up failed: $e');
     }
   }
 
@@ -68,9 +73,14 @@ class AuthService {
 
       return AuthResult.success(credential.user!);
     } on FirebaseAuthException catch (e) {
-      return AuthResult.failure(_getAuthErrorMessage(e.code));
+      // Log error details for debugging
+      // ignore: avoid_print
+      print('Firebase Auth Error [Sign In]: ${e.code} - ${e.message}');
+      return AuthResult.failure(_getAuthErrorMessage(e.code, e.message));
     } catch (e) {
-      return AuthResult.failure('An unexpected error occurred: $e');
+      // ignore: avoid_print
+      print('Unexpected Error [Sign In]: $e');
+      return AuthResult.failure('Sign-in failed: $e');
     }
   }
 
@@ -105,8 +115,12 @@ class AuthService {
 
       return AuthResult.success(userCredential.user!);
     } on FirebaseAuthException catch (e) {
-      return AuthResult.failure(_getAuthErrorMessage(e.code));
+      // ignore: avoid_print
+      print('Firebase Auth Error [Google Sign In]: ${e.code} - ${e.message}');
+      return AuthResult.failure(_getAuthErrorMessage(e.code, e.message));
     } catch (e) {
+      // ignore: avoid_print
+      print('Unexpected Error [Google Sign In]: $e');
       return AuthResult.failure('Google sign-in failed: $e');
     }
   }
@@ -126,7 +140,10 @@ class AuthService {
 
       return AuthResult.success(credential.user!);
     } on FirebaseAuthException catch (e) {
-      return AuthResult.failure(_getAuthErrorMessage(e.code));
+      // ignore: avoid_print
+      print(
+          'Firebase Auth Error [Anonymous Sign In]: ${e.code} - ${e.message}');
+      return AuthResult.failure(_getAuthErrorMessage(e.code, e.message));
     } catch (e) {
       return AuthResult.failure('Anonymous sign-in failed: $e');
     }
@@ -145,7 +162,9 @@ class AuthService {
       await _auth.sendPasswordResetEmail(email: email);
       return AuthResult.success(null);
     } on FirebaseAuthException catch (e) {
-      return AuthResult.failure(_getAuthErrorMessage(e.code));
+      // ignore: avoid_print
+      print('Firebase Auth Error [Password Reset]: ${e.code} - ${e.message}');
+      return AuthResult.failure(_getAuthErrorMessage(e.code, e.message));
     } catch (e) {
       return AuthResult.failure('Failed to send reset email: $e');
     }
@@ -162,7 +181,10 @@ class AuthService {
       await user.sendEmailVerification();
       return AuthResult.success(null);
     } on FirebaseAuthException catch (e) {
-      return AuthResult.failure(_getAuthErrorMessage(e.code));
+      // ignore: avoid_print
+      print(
+          'Firebase Auth Error [Resend Verification]: ${e.code} - ${e.message}');
+      return AuthResult.failure(_getAuthErrorMessage(e.code, e.message));
     } catch (e) {
       return AuthResult.failure('Failed to send verification email: $e');
     }
@@ -289,28 +311,45 @@ class AuthService {
   }
 
   /// Get user-friendly error message
-  String _getAuthErrorMessage(String code) {
+  String _getAuthErrorMessage(String code, [String? originalMessage]) {
+    // For debugging on deployed site, include the error code
+    final debugSuffix = ' [Error: $code]';
+
     switch (code) {
       case 'weak-password':
-        return 'The password is too weak. Please use a stronger password.';
+        return 'The password is too weak. Please use a stronger password.$debugSuffix';
       case 'email-already-in-use':
-        return 'An account already exists with this email.';
+        return 'An account already exists with this email.$debugSuffix';
       case 'invalid-email':
-        return 'The email address is invalid.';
+        return 'The email address is invalid.$debugSuffix';
       case 'user-not-found':
-        return 'No account found with this email.';
+        return 'No account found with this email.$debugSuffix';
       case 'wrong-password':
-        return 'Incorrect password. Please try again.';
+        return 'Incorrect password. Please try again.$debugSuffix';
       case 'user-disabled':
-        return 'This account has been disabled.';
+        return 'This account has been disabled.$debugSuffix';
       case 'too-many-requests':
-        return 'Too many attempts. Please try again later.';
+        return 'Too many attempts. Please try again later.$debugSuffix';
       case 'operation-not-allowed':
-        return 'This sign-in method is not enabled.';
+        return 'This sign-in method is not enabled in Firebase Console.$debugSuffix';
       case 'network-request-failed':
-        return 'Network error. Please check your connection.';
+        return 'Network error. Please check your connection.$debugSuffix';
+      case 'unauthorized-domain':
+      case 'unauthorized-continue-uri':
+        return 'This domain (youssefsalem582.github.io) needs to be added to Firebase Console > Authentication > Authorized domains.$debugSuffix';
+      case 'invalid-api-key':
+      case 'api-key-not-valid':
+        return 'Invalid Firebase API key configuration.$debugSuffix';
+      case 'app-not-authorized':
+        return 'This app is not authorized to use Firebase Authentication.$debugSuffix';
+      case 'invalid-credential':
+        return 'Invalid credentials provided.$debugSuffix';
       default:
-        return 'An error occurred. Please try again.';
+        // Show the full error details for unknown errors
+        if (originalMessage != null) {
+          return 'Error: $originalMessage [Code: $code]';
+        }
+        return 'An error occurred. Please try again.$debugSuffix';
     }
   }
 }
