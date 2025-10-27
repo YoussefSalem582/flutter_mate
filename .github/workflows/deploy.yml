@@ -36,12 +36,15 @@ jobs:
       
       - name: Setup Firebase options
         run: |
-          # Option 1: Use example file for demo deployment
-          # cp lib/firebase_options.dart.example lib/firebase_options.dart
+          # Using example files for demo deployment
+          # This allows the build to complete without exposing real API keys
+          cp lib/firebase_options.dart.example lib/firebase_options.dart
+          cp lib/core/config/api_keys_example.dart lib/core/config/api_keys.dart
           
-          # Option 2: Use GitHub Secrets (current approach)
-          # Add FIREBASE_OPTIONS_DART secret in GitHub: Settings > Secrets > Actions
-          echo "${{ secrets.FIREBASE_OPTIONS_DART }}" > lib/firebase_options.dart
+          # Note: For production with real Firebase, you would need to:
+          # 1. Add FIREBASE_OPTIONS_DART and API_KEYS_DART as GitHub Secrets
+          # 2. Use: echo "${{ secrets.FIREBASE_OPTIONS_DART }}" > lib/firebase_options.dart
+          # 3. Use: echo "${{ secrets.API_KEYS_DART }}" > lib/core/config/api_keys.dart
       
       - name: Build web
         run: flutter build web --release --base-href /flutter_mate/
