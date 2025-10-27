@@ -15,7 +15,9 @@ This repository uses `.gitignore` to prevent committing sensitive files:
 - `android/app/google-services.json` - Firebase Android config
 - `ios/Runner/GoogleService-Info.plist` - Firebase iOS config
 - `lib/firebase_options.dart` - Firebase configuration
-- `web/index.html` - Web configuration with Firebase keys
+
+### Public Files (Safe to Commit):
+- `web/index.html` - **Web Firebase config IS public by design** - Web apps expose these keys in client code. Security is enforced by Firebase Security Rules, not by hiding the keys.
 
 ### Example Files (Safe to Commit):
 - `lib/core/config/api_keys_example.dart` - Template with placeholder values

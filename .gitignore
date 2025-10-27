@@ -43,10 +43,11 @@ secrets.json
 api_keys.json
 
 # Firebase Configuration Files - SENSITIVE!
+# Note: web/index.html is NOT ignored because Firebase Web API keys are meant to be public
+# They are secured by Firebase Security Rules, not by keeping them secret
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 lib/firebase_options.dart
-web/index.html
 
 # Symbolication related
 app.*.symbols
