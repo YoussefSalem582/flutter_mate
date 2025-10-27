@@ -1,0 +1,27 @@
+# GitGuardian configuration
+# Docs: https://docs.gitguardian.com/ggshield-docs/reference/gitguardian-yaml
+
+version: 2
+
+# Paths to ignore
+paths-ignore:
+  - "**/*_example.dart"
+  - "**/*.example"
+  - "**/example/**"
+  - "**/*.md"
+  - "**/docs/**"
+  - "**/tech_readme_files/**"
+
+# Matches to ignore (for placeholder/example values)
+matches-ignore:
+  - name: Firebase API Keys in example files
+    match: AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  - name: Example project IDs
+    match: your-project-id
+
+  - name: Example API keys
+    match: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  - name: Example client IDs  
+    match: 123456789-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com
