@@ -3,6 +3,7 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.9.2+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Deploy to GitHub Pages](https://github.com/YoussefSalem582/flutter_mate/actions/workflows/deploy.yml/badge.svg)](https://github.com/YoussefSalem582/flutter_mate/actions/workflows/deploy.yml)
 [![GitHub stars](https://img.shields.io/github/stars/YoussefSalem582/flutter_mate?style=social)](https://github.com/YoussefSalem582/flutter_mate/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/YoussefSalem582/flutter_mate?style=social)](https://github.com/YoussefSalem582/flutter_mate/network/members)
 [![GitHub issues](https://img.shields.io/github/issues/YoussefSalem582/flutter_mate)](https://github.com/YoussefSalem582/flutter_mate/issues)
@@ -12,7 +13,7 @@
 
 FlutterMate is a comprehensive learning assistant designed to guide you from Flutter beginner to advanced developer through structured lessons, progress tracking, and AI-powered assistance.
 
-📚 [**View Documentation**](https://youssefsalem582.github.io/flutter_mate/) | 🐛 [**Report Bug**](https://github.com/YoussefSalem582/flutter_mate/issues) | 💡 [**Request Feature**](https://github.com/YoussefSalem582/flutter_mate/issues)
+🌐 [**Live Demo**](https://youssefsalem582.github.io/flutter_mate/) | 📚 [**Documentation**](https://youssefsalem582.github.io/flutter_mate/) | 🐛 [**Report Bug**](https://github.com/YoussefSalem582/flutter_mate/issues) | 💡 [**Request Feature**](https://github.com/YoussefSalem582/flutter_mate/issues)
 
 ## ✨ Features
 

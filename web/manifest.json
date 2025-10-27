@@ -1,11 +1,11 @@
 {
-    "name": "flutter_mate",
-    "short_name": "flutter_mate",
+    "name": "FlutterMate - Your Flutter Learning Companion",
+    "short_name": "FlutterMate",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#2196F3",
+    "theme_color": "#2196F3",
+    "description": "Master Flutter development with structured roadmaps, progress tracking, quizzes, and AI assistance.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
