@@ -12,7 +12,7 @@ class ActivityItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final color = Color(item.colorHex);
+    final color = item.color;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -37,7 +37,7 @@ class ActivityItemCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
-            IconData(item.iconCodePoint, fontFamily: 'MaterialIcons'),
+            item.icon,
             color: color,
             size: 24,
           ),

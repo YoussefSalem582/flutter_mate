@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_mate/features/roadmap/data/models/roadmap_stage.dart';
 import 'package:flutter_mate/features/roadmap/data/repositories/roadmap_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -5,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Local implementation persisting progress via [SharedPreferences].
 class RoadmapRepositoryImpl implements RoadmapRepository {
   RoadmapRepositoryImpl({SharedPreferences? preferences})
-    : _preferences = preferences;
+      : _preferences = preferences;
 
   static const String _progressPrefix = 'roadmap_progress_';
 
@@ -19,24 +20,24 @@ class RoadmapRepositoryImpl implements RoadmapRepository {
         id: 'beginner',
         title: 'Beginner',
         subtitle: 'Master the fundamentals',
-        iconCodePoint: 0xe8d0, // Icons.stars
-        colorHex: 0xFF4CAF50,
+        icon: Icons.stars,
+        color: Color(0xFF4CAF50),
         topics: ['Dart Basics', 'Widgets', 'Layouts', 'Navigation'],
       ),
       RoadmapStage(
         id: 'intermediate',
         title: 'Intermediate',
         subtitle: 'Build real applications',
-        iconCodePoint: 0xe53f, // Icons.trending_up
-        colorHex: 0xFF2196F3,
+        icon: Icons.trending_up,
+        color: Color(0xFF2196F3),
         topics: ['State Management', 'APIs', 'Database', 'Authentication'],
       ),
       RoadmapStage(
         id: 'advanced',
         title: 'Advanced',
         subtitle: 'Become an expert',
-        iconCodePoint: 0xee3d, // Icons.workspace_premium
-        colorHex: 0xFF9C27B0,
+        icon: Icons.workspace_premium,
+        color: Color(0xFF9C27B0),
         topics: ['Architecture', 'Testing', 'Performance', 'Deployment'],
       ),
     ];

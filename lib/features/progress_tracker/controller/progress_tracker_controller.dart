@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_mate/features/roadmap/controller/roadmap_controller.dart';
 import 'package:flutter_mate/features/roadmap/controller/lesson_controller.dart';
 import 'package:flutter_mate/features/roadmap/data/models/roadmap_stage.dart';
@@ -10,8 +11,8 @@ class ProgressTrackerController extends GetxController {
   ProgressTrackerController({
     required RoadmapController roadmapController,
     required LessonController lessonController,
-  }) : _roadmapController = roadmapController,
-       _lessonController = lessonController;
+  })  : _roadmapController = roadmapController,
+        _lessonController = lessonController;
 
   final RoadmapController _roadmapController;
   final LessonController _lessonController;
@@ -28,20 +29,20 @@ class ProgressTrackerController extends GetxController {
     const ActivityItem(
       title: 'Completed: Dart Basics',
       subtitle: '2 hours ago',
-      iconCodePoint: 0xf05e6, // Icons.check_circle
-      colorHex: 0xFF4CAF50,
+      icon: Icons.check_circle,
+      color: Color(0xFF4CAF50),
     ),
     const ActivityItem(
       title: 'Started: Widget Tree',
       subtitle: '5 hours ago',
-      iconCodePoint: 0xe041, // Icons.play_circle
-      colorHex: 0xFF2196F3,
+      icon: Icons.play_circle,
+      color: Color(0xFF2196F3),
     ),
     const ActivityItem(
       title: 'Achievement: First Widget',
       subtitle: 'Yesterday',
-      iconCodePoint: 0xe885, // Icons.emoji_events
-      colorHex: 0xFFFFC107,
+      icon: Icons.emoji_events,
+      color: Color(0xFFFFC107),
     ),
   ].obs;
 
@@ -61,9 +62,8 @@ class ProgressTrackerController extends GetxController {
   void _computeStats() {
     // Get total lessons completed from lesson controller
     final completionStatus = _lessonController.completionStatus;
-    final completed = completionStatus.values
-        .where((isCompleted) => isCompleted)
-        .length;
+    final completed =
+        completionStatus.values.where((isCompleted) => isCompleted).length;
 
     lessonsCompleted.value = completed;
     totalLessons.value = completionStatus.length;
@@ -91,12 +91,12 @@ class ActivityItem {
   const ActivityItem({
     required this.title,
     required this.subtitle,
-    required this.iconCodePoint,
-    required this.colorHex,
+    required this.icon,
+    required this.color,
   });
 
   final String title;
   final String subtitle;
-  final int iconCodePoint;
-  final int colorHex;
+  final IconData icon;
+  final Color color;
 }
