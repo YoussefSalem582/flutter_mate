@@ -1,6 +1,6 @@
 # FlutterMate 🚀
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.9.2+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.0+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Deploy to GitHub Pages](https://github.com/YoussefSalem582/flutter_mate/actions/workflows/deploy.yml/badge.svg)](https://github.com/YoussefSalem582/flutter_mate/actions/workflows/deploy.yml)
@@ -78,8 +78,8 @@ Built with **Clean Architecture** principles:
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Flutter SDK >=3.9.2
-- Dart SDK (included with Flutter)
+- Flutter SDK >=3.0.0
+- Dart SDK >=3.0.0 (included with Flutter)
 - Android Studio / VS Code with Flutter plugin
 
 ### Installation
@@ -120,8 +120,8 @@ Built with **Clean Architecture** principles:
 
 ## 🛠️ Tech Stack
 
-- **Framework:** Flutter 3.9.2+
-- **Language:** Dart
+- **Framework:** Flutter 3.0+
+- **Language:** Dart 3.0+
 - **State Management:** GetX 4.6.6
 - **Animations:** flutter_animate 4.5.0, Lottie 3.1.0
 - **Storage:** shared_preferences 2.2.2
