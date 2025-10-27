@@ -27,101 +27,280 @@ class LearningResourcesWidget extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header
-        Row(
-          children: [
-            const Icon(Icons.menu_book_rounded, size: 24),
-            const SizedBox(width: 8),
-            Text(
-              'Learning Resources',
-              style: AppTextStyles.h3.copyWith(
-                color: Theme.of(context).textTheme.bodyLarge?.color,
-                fontWeight: FontWeight.bold,
-              ),
+        // Simple header
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.15),
+              width: 1,
             ),
-          ],
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.library_books_rounded,
+                color: Colors.grey[700],
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Learning Resources',
+                  style: AppTextStyles.h3.copyWith(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${lesson.resources.length}',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 12),
 
-        // Resource cards
+        const SizedBox(height: 16),
+
+        // Resource cards with enhanced styling
         ...lesson.resources.entries.map((entry) {
+          final index = lesson.resources.keys.toList().indexOf(entry.key);
+          final resourceIcon = _getResourceIcon(entry.key, entry.value);
+          final resourceColor = _getResourceColor(entry.key, entry.value);
+
           return Container(
-            margin: const EdgeInsets.only(bottom: 8),
+            margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: AppColors.info.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  isDark
+                      ? resourceColor.withOpacity(0.08)
+                      : resourceColor.withOpacity(0.05),
+                  isDark ? resourceColor.withOpacity(0.05) : Colors.white,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: AppColors.info.withOpacity(0.2),
+                color: resourceColor.withOpacity(0.3),
                 width: 2,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: resourceColor.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 onTap: () => _openResource(entry.key, entry.value),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(18),
                   child: Row(
                     children: [
-                      // Link icon
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.info.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.link_rounded,
-                          color: AppColors.info,
-                          size: 24,
-                        ),
+                      // Enhanced icon with badge
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  resourceColor.withOpacity(0.2),
+                                  resourceColor.withOpacity(0.1),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: resourceColor.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Icon(
+                              resourceIcon,
+                              color: resourceColor,
+                              size: 28,
+                            ),
+                          ),
+                          Positioned(
+                            right: -4,
+                            top: -4,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: resourceColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color:
+                                      Theme.of(context).scaffoldBackgroundColor,
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.open_in_new_rounded,
+                                color: Colors.white,
+                                size: 10,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 18),
 
-                      // Resource info
+                      // Resource info with enhanced styling
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               entry.key,
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).textTheme.bodyLarge?.color,
-                                fontWeight: FontWeight.w600,
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color,
+                                fontWeight: FontWeight.bold,
+                                height: 1.3,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Tap to open in browser',
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.info,
-                              ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.touch_app_rounded,
+                                  size: 14,
+                                  color: resourceColor.withOpacity(0.8),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    _getResourceDescription(
+                                        entry.key, entry.value),
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: resourceColor.withOpacity(0.9),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
 
-                      // External link icon
-                      const Icon(
-                        Icons.open_in_new_rounded,
-                        size: 20,
-                        color: AppColors.info,
+                      // Arrow indicator
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: resourceColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 18,
+                          color: resourceColor,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-          );
+          )
+              .animate(delay: Duration(milliseconds: 100 * index))
+              .fadeIn(duration: 400.ms)
+              .slideX(begin: -0.1);
         }),
       ],
     ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
+  }
+
+  /// Get appropriate icon for resource type
+  IconData _getResourceIcon(String title, String url) {
+    final lowerTitle = title.toLowerCase();
+    final lowerUrl = url.toLowerCase();
+
+    if (lowerTitle.contains('video') ||
+        lowerUrl.contains('youtube') ||
+        lowerUrl.contains('vimeo')) {
+      return Icons.play_circle_rounded;
+    } else if (lowerTitle.contains('doc') ||
+        lowerTitle.contains('guide') ||
+        lowerUrl.contains('docs.')) {
+      return Icons.description_rounded;
+    } else if (lowerTitle.contains('tutorial') ||
+        lowerTitle.contains('learn')) {
+      return Icons.school_rounded;
+    } else if (lowerTitle.contains('github') || lowerUrl.contains('github')) {
+      return Icons.code_rounded;
+    } else if (lowerTitle.contains('article') || lowerTitle.contains('blog')) {
+      return Icons.article_rounded;
+    } else if (lowerTitle.contains('book') || lowerTitle.contains('ebook')) {
+      return Icons.menu_book_rounded;
+    }
+    return Icons.link_rounded;
+  }
+
+  /// Get appropriate color for resource type
+  Color _getResourceColor(String title, String url) {
+    final lowerTitle = title.toLowerCase();
+    final lowerUrl = url.toLowerCase();
+
+    if (lowerTitle.contains('video') || lowerUrl.contains('youtube')) {
+      return Colors.red;
+    } else if (lowerTitle.contains('doc') || lowerTitle.contains('guide')) {
+      return AppColors.info;
+    } else if (lowerTitle.contains('tutorial')) {
+      return Colors.purple;
+    } else if (lowerTitle.contains('github') || lowerUrl.contains('github')) {
+      return Colors.black87;
+    } else if (lowerTitle.contains('article')) {
+      return Colors.orange;
+    }
+    return AppColors.info;
+  }
+
+  /// Get description based on resource type
+  String _getResourceDescription(String title, String url) {
+    final lowerTitle = title.toLowerCase();
+    final lowerUrl = url.toLowerCase();
+
+    if (lowerTitle.contains('video') || lowerUrl.contains('youtube')) {
+      return 'Watch video tutorial';
+    } else if (lowerTitle.contains('doc') || lowerTitle.contains('guide')) {
+      return 'Read documentation';
+    } else if (lowerTitle.contains('tutorial')) {
+      return 'Follow step-by-step';
+    } else if (lowerTitle.contains('github')) {
+      return 'View source code';
+    } else if (lowerTitle.contains('article')) {
+      return 'Read article';
+    }
+    return 'Open external link';
   }
 
   /// Open resource URL in browser with achievement tracking

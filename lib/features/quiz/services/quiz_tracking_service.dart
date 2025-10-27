@@ -106,6 +106,13 @@ class QuizTrackingService extends GetxService {
     return quizResults.containsKey(lessonId);
   }
 
+  /// Check if user got all questions correct (100% score)
+  bool hasPassedQuizPerfectly(String lessonId) {
+    final result = quizResults[lessonId];
+    if (result == null) return false;
+    return result.correctAnswers == result.totalQuestions;
+  }
+
   double getQuizScore(String lessonId) {
     final result = quizResults[lessonId];
     return result?.scorePercentage ?? 0.0;

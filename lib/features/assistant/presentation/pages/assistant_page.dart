@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_mate/core/routes/app_routes.dart';
 import 'package:flutter_mate/core/constants/app_colors.dart';
 import 'package:flutter_mate/core/constants/app_text_styles.dart';
 import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
@@ -129,9 +128,8 @@ class AssistantPage extends GetView<AssistantController> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.darkSurface
-                          : Colors.grey.shade200,
+                      color:
+                          isDark ? AppColors.darkSurface : Colors.grey.shade200,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -420,8 +418,11 @@ class AssistantPage extends GetView<AssistantController> {
                             fontSize: 10,
                             color: message.isUser
                                 ? Colors.white.withOpacity(0.7)
-                                : Theme.of(context).textTheme.bodyMedium?.color
-                                      ?.withOpacity(0.5),
+                                : Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color
+                                    ?.withOpacity(0.5),
                           ),
                         ),
                         if (message.isUser) ...[

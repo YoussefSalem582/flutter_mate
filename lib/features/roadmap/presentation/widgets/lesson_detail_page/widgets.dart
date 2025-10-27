@@ -3,7 +3,7 @@
 /// These widgets are specifically used in lesson_detail_page.dart
 
 export 'code_playground_card_widget.dart';
-export 'exercise_dialog.dart';
+export 'exercise_bottom_sheet.dart';
 export 'exercises_card_widget.dart';
 export 'learning_objectives_widget.dart';
 export 'learning_resources_widget.dart';

@@ -1,67 +1,271 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../../../../core/constants/app_colors.dart';
 import '../../../../../../core/constants/app_text_styles.dart';
+import '../../../controller/study_timer_controller.dart';
 
-/// Interactive study timer widget for tracking lesson study time.
+/// Interactive persistent study timer widget.
 ///
 /// Features:
+/// - Persistent timer that continues even when app is closed
 /// - Real-time timer display (HH:MM:SS format)
 /// - Play/Pause functionality
 /// - Reset button
-/// - Gradient background with animated color changes
-/// - Tabular figures for consistent number width
-class StudyTimerWidget extends StatefulWidget {
-  const StudyTimerWidget({super.key});
+/// - Elegant gradient design
+/// - Per-lesson time tracking
+/// - Auto-completion when target duration is reached
+class StudyTimerWidget extends StatelessWidget {
+  final String lessonId;
+  final int? durationMinutes;
+
+  const StudyTimerWidget({
+    super.key,
+    required this.lessonId,
+    this.durationMinutes,
+  });
 
   @override
-  State<StudyTimerWidget> createState() => _StudyTimerWidgetState();
-}
+  Widget build(BuildContext context) {
+    // Get or create timer controller
+    final timerController = Get.put(StudyTimerController());
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-class _StudyTimerWidgetState extends State<StudyTimerWidget> {
-  int _studySeconds = 0;
-  bool _isTimerRunning = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _startTimer();
-  }
-
-  /// Start the timer loop
-  void _startTimer() {
-    _isTimerRunning = true;
-    Future.doWhile(() async {
-      if (!_isTimerRunning || !mounted) return false;
-      await Future.delayed(const Duration(seconds: 1));
-      if (mounted && _isTimerRunning) {
-        setState(() => _studySeconds++);
-      }
-      return _isTimerRunning && mounted;
-    });
-  }
-
-  /// Toggle timer between play and pause
-  void _toggleTimer() {
-    setState(() {
-      _isTimerRunning = !_isTimerRunning;
-      if (_isTimerRunning) {
-        _startTimer();
+    // Initialize timer for this lesson
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (timerController.currentLessonId.value != lessonId) {
+        timerController.startTimer(lessonId, durationMinutes: durationMinutes);
       }
     });
-  }
 
-  /// Reset timer to zero and start again
-  void _resetTimer() {
-    setState(() {
-      _studySeconds = 0;
-      _isTimerRunning = true;
+    return Obx(() {
+      final isRunning = timerController.isRunning.value;
+      final elapsedSeconds = timerController.elapsedSeconds.value;
+      final targetSeconds = timerController.targetDuration.value;
+      final hasTarget = targetSeconds > 0;
+      final progress =
+          hasTarget ? (elapsedSeconds / targetSeconds).clamp(0.0, 1.0) : 0.0;
+
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isDark
+              ? Colors.grey.withOpacity(0.12)
+              : Colors.grey.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark
+                ? Colors.grey.withOpacity(0.25)
+                : Colors.grey.withOpacity(0.15),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                // Simple timer icon
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF42A5F5).withOpacity(0.15)
+                        : Colors.grey.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.timer_rounded,
+                    color: isDark ? const Color(0xFF42A5F5) : Colors.grey[700],
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(width: 16),
+
+                // Timer display
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Study Time',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color:
+                                  isDark ? Colors.grey[400] : Colors.grey[600],
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          if (isRunning) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? const Color(0xFF66BB6A).withOpacity(0.2)
+                                    : Colors.grey.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'Active',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: isDark
+                                      ? const Color(0xFF66BB6A)
+                                      : Colors.grey[700],
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _formatTime(elapsedSeconds),
+                        style: AppTextStyles.h1.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.grey[100] : Colors.grey[800],
+                          fontFeatures: [const FontFeature.tabularFigures()],
+                          height: 1.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Control buttons
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Play/Pause button
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () => timerController.toggleTimer(),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF42A5F5).withOpacity(0.15)
+                                : Colors.grey.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF42A5F5).withOpacity(0.3)
+                                  : Colors.grey.withOpacity(0.2),
+                            ),
+                          ),
+                          child: Icon(
+                            isRunning
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
+                            size: 28,
+                            color: isDark
+                                ? const Color(0xFF42A5F5)
+                                : Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Reset button
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () => timerController.resetTimer(),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.grey.withOpacity(0.15)
+                                : Colors.grey.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isDark
+                                  ? Colors.grey.withOpacity(0.3)
+                                  : Colors.grey.withOpacity(0.2),
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.refresh_rounded,
+                            size: 28,
+                            color: isDark ? Colors.grey[300] : Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            // Persistence indicator
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Auto-saved',
+                  style: AppTextStyles.caption.copyWith(
+                    color: isDark ? Colors.grey[500] : Colors.grey[500],
+                    fontSize: 11,
+                  ),
+                ),
+                if (hasTarget)
+                  Text(
+                    'Target: ${_formatTime(targetSeconds)}',
+                    style: AppTextStyles.caption.copyWith(
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+              ],
+            ),
+
+            // Progress bar (if target duration is set)
+            if (hasTarget) ...[
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 6,
+                  backgroundColor: isDark
+                      ? Colors.grey.withOpacity(0.25)
+                      : Colors.grey.withOpacity(0.15),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    progress >= 1.0
+                        ? (isDark ? const Color(0xFF66BB6A) : Colors.green)
+                        : (isDark
+                            ? const Color(0xFF42A5F5)
+                            : Colors.grey[700]!),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${(progress * 100).toStringAsFixed(0)}% complete',
+                style: AppTextStyles.caption.copyWith(
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ).animate().fadeIn(delay: 100.ms).slideY(begin: -0.2);
     });
-    _startTimer();
   }
 
-  /// Format seconds to HH:MM:SS or MM:SS
+  /// Format seconds to readable time
   String _formatTime(int seconds) {
     final hours = seconds ~/ 3600;
     final minutes = (seconds % 3600) ~/ 60;
@@ -71,92 +275,5 @@ class _StudyTimerWidgetState extends State<StudyTimerWidget> {
       return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
     }
     return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
-  }
-
-  @override
-  void dispose() {
-    _isTimerRunning = false;
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.success.withOpacity(0.1),
-            AppColors.info.withOpacity(0.1),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.success.withOpacity(0.3), width: 2),
-      ),
-      child: Row(
-        children: [
-          // Timer icon
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _isTimerRunning
-                  ? AppColors.success.withOpacity(0.2)
-                  : Colors.grey.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.timer_rounded,
-              color: _isTimerRunning ? AppColors.success : Colors.grey,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 16),
-
-          // Timer display
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Study Time',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatTime(_studySeconds),
-                  style: AppTextStyles.h2.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: _isTimerRunning ? AppColors.success : Colors.grey,
-                    fontFeatures: [const FontFeature.tabularFigures()],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Play/Pause button
-          IconButton(
-            onPressed: _toggleTimer,
-            icon: Icon(
-              _isTimerRunning ? Icons.pause_circle : Icons.play_circle,
-              size: 32,
-            ),
-            color: _isTimerRunning ? AppColors.warning : AppColors.success,
-            tooltip: _isTimerRunning ? 'Pause Timer' : 'Resume Timer',
-          ),
-
-          // Reset button
-          IconButton(
-            onPressed: _resetTimer,
-            icon: const Icon(Icons.refresh_rounded, size: 28),
-            color: AppColors.info,
-            tooltip: 'Reset Timer',
-          ),
-        ],
-      ),
-    ).animate().fadeIn(delay: 100.ms).slideY(begin: -0.2);
   }
 }

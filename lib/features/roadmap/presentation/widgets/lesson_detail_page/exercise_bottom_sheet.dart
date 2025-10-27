@@ -1,30 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import '../../../../../../core/constants/app_colors.dart';
 import '../../../../../../core/constants/app_text_styles.dart';
 import '../../../data/models/lesson.dart';
 
-/// Exercise dialog showing practice tasks for the lesson.
+/// Exercise bottom sheet showing practice tasks for the lesson.
 ///
 /// Features:
-/// - Full-screen scrollable dialog
+/// - Scrollable bottom sheet
 /// - Gradient header
 /// - Exercise cards with tips
 /// - Study tips section
 /// - Lesson-specific exercises
-class ExerciseDialog {
-  /// Show the exercise dialog
+class ExerciseBottomSheet {
+  /// Show the exercise bottom sheet
   static void show(BuildContext context, Lesson lesson) {
     final exercises = _getExercisesForLesson(lesson.id);
 
-    Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          constraints: const BoxConstraints(maxHeight: 600),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
               // Header
               Container(
                 padding: const EdgeInsets.all(24),
@@ -69,7 +89,7 @@ class ExerciseDialog {
                       ),
                     ),
                     IconButton(
-                      onPressed: () => Get.back(),
+                      onPressed: () => Navigator.pop(context),
                       icon: const Icon(
                         Icons.close_rounded,
                         color: Colors.white,
@@ -82,6 +102,7 @@ class ExerciseDialog {
               // Content
               Expanded(
                 child: ListView(
+                  controller: scrollController,
                   padding: const EdgeInsets.all(24),
                   children: [
                     // Exercise cards

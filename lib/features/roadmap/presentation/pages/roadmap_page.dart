@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter_mate/core/routes/app_routes.dart';
 import 'package:flutter_mate/core/constants/app_colors.dart';
 import 'package:flutter_mate/features/roadmap/controller/roadmap_controller.dart';
 import 'package:flutter_mate/features/roadmap/presentation/widgets/roadmap_page/widgets.dart';
@@ -66,10 +65,10 @@ class RoadmapPage extends GetView<RoadmapController> {
         final overallProgress = controller.stages.isEmpty
             ? 0.0
             : controller.stages.fold<double>(
-                    0.0,
-                    (sum, stage) => sum + controller.stageProgress(stage.id),
-                  ) /
-                  controller.stages.length;
+                  0.0,
+                  (sum, stage) => sum + controller.stageProgress(stage.id),
+                ) /
+                controller.stages.length;
 
         return ListView(
           padding: const EdgeInsets.all(16),
