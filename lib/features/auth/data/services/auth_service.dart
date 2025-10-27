@@ -9,17 +9,10 @@ import '../models/app_user.dart'
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  // Google Sign-In singleton instance
-  GoogleSignIn get _googleSignIn => GoogleSignIn.instance;
-
-  // Track if Google Sign-In has been initialized
-  bool _googleSignInInitialized = false;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   /// Get current Firebase user
-  User? get currentFirebaseUser => _auth.currentUser;
-
-  /// Stream of auth state changes
+  User? get currentFirebaseUser => _auth.currentUser;  /// Stream of auth state changes
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   /// Sign up with email and password
@@ -82,34 +75,20 @@ class AuthService {
   /// Sign in with Google
   Future<AuthResult> signInWithGoogle() async {
     try {
-      // Initialize Google Sign-In if not already done
-      if (!_googleSignInInitialized) {
-        await _googleSignIn.initialize();
-        _googleSignInInitialized = true;
-      }
-
-      // Authenticate the user
-      final GoogleSignInAccount? googleUser =
-          await _googleSignIn.authenticate();
+      // Trigger Google Sign-In flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
         return AuthResult.cancelled();
       }
 
-      // Get authentication details
-      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      // Obtain auth details
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
-      // Get authorization for Firebase scopes if needed
-      final authorization = await googleUser.authorizationClient
-          .authorizationForScopes(['email', 'profile']);
-
-      if (authorization == null) {
-        return AuthResult.failure('Failed to get authorization');
-      }
-
-      // Create credential for Firebase
+      // Create credential
       final credential = GoogleAuthProvider.credential(
-        accessToken: authorization.accessToken,
+        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
@@ -153,10 +132,8 @@ class AuthService {
 
   /// Sign out
   Future<void> signOut() async {
-    // Sign out from Google if initialized
-    if (_googleSignInInitialized) {
-      await _googleSignIn.signOut();
-    }
+    // Sign out from Google and Firebase
+    await _googleSignIn.signOut();
     await _auth.signOut();
   }
 
