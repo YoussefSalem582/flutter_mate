@@ -34,18 +34,22 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
       
-      # Build with tokenized API keys
-      # Secrets are optional - falls back to hardcoded values if not set
-      # To add secrets: Repository Settings > Secrets and variables > Actions > New repository secret
-      - name: Build web with tokenized API keys
+      # Build with tokenized API keys from GitHub Secrets
+      # All API keys MUST be provided via --dart-define for security
+      # Add secrets in: Repository Settings > Secrets and variables > Actions
+      - name: Build web with secure tokenized API keys
         env:
           FIREBASE_WEB_KEY: ${{ secrets.FIREBASE_API_KEY_WEB }}
+          FIREBASE_WEB_APP_ID: ${{ secrets.FIREBASE_APP_ID_WEB }}
+          FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID_WEB }}
           OPENAI_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           flutter build web --release \
             --base-href /flutter_mate/ \
-            --dart-define=FIREBASE_API_KEY_WEB=${FIREBASE_WEB_KEY:-AIzaSyCPCEK_KS_3mYqVWWQvBW1QuaturMYvv68} \
-            --dart-define=OPENAI_API_KEY=${OPENAI_KEY:-YOUR_OPENAI_API_KEY} \
+            --dart-define=FIREBASE_API_KEY_WEB=$FIREBASE_WEB_KEY \
+            --dart-define=FIREBASE_APP_ID_WEB=$FIREBASE_WEB_APP_ID \
+            --dart-define=FIREBASE_MEASUREMENT_ID_WEB=$FIREBASE_MEASUREMENT_ID \
+            --dart-define=OPENAI_API_KEY=$OPENAI_KEY \
             --dart-define=PRODUCTION=true
       
       - name: Upload artifact

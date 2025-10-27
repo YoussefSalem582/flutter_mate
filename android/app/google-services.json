@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "320880192368",
+    "project_id": "fir-3840b",
+    "storage_bucket": "fir-3840b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:320880192368:android:bdcbb510c19f7c485efdb5",
+        "android_client_info": {
+          "package_name": "com.example.firbase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfwUtmBwVxaJZbJLOsc3X2w3JWc50oDyg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:320880192368:android:54d1937257d7ec255efdb5",
+        "android_client_info": {
+          "package_name": "com.example.flutter_mate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfwUtmBwVxaJZbJLOsc3X2w3JWc50oDyg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

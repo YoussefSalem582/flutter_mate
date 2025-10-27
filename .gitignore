@@ -33,9 +33,9 @@ migrate_working_dir/
 /build/
 /coverage/
 
-# API Keys and Secrets - NEVER COMMIT THESE!
+# API Keys and Secrets
 # Note: api_keys.dart now uses tokenization with --dart-define
-# The file contains fallback values for local development
+# The file contains fallback values that are safe to commit
 # Production keys should be passed via --dart-define flags
 lib/core/config/api_keys.dart
 *.env
@@ -46,13 +46,10 @@ secrets.json
 api_keys.json
 
 # Firebase Configuration Files
-# Note: These files are now safe to commit as they use hardcoded values
+# Note: firebase_options.dart is now COMMITTED to repo (contains hardcoded safe values)
+# google-services.json is COMMITTED to repo (needed for Android builds)
 # Production keys are injected via --dart-define at build time
-# Keeping them in .gitignore for security best practices
-# If you want to commit them, remove these lines:
-android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
-lib/firebase_options.dart
 
 # Symbolication related
 app.*.symbols
