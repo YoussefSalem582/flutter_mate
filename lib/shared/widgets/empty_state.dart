@@ -30,7 +30,7 @@ class EmptyState extends StatelessWidget {
               size: 80,
               color: Theme.of(
                 context,
-              ).colorScheme.primary.withValues(alpha: 0.5),
+              ).colorScheme.primary.withOpacity(0.5),
             ),
             const SizedBox(height: 24),
             Text(
@@ -47,7 +47,7 @@ class EmptyState extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.7),
+                  ).colorScheme.onSurface.withOpacity(0.7),
                 ),
                 textAlign: TextAlign.center,
               ),

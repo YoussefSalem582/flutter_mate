@@ -39,7 +39,7 @@ class RoadmapController extends GetxController {
       // Load progress from lesson completion if available
       for (final stage in fetchedStages) {
         if (_lessonRepository != null) {
-          final lessonProgress = await _lessonRepository
+          final lessonProgress = await _lessonRepository!
               .getStageCompletionPercentage(stage.id);
           progress[stage.id] = lessonProgress;
         } else {
@@ -63,7 +63,7 @@ class RoadmapController extends GetxController {
     // Refresh stage progress from lesson completion
     if (_lessonRepository != null) {
       for (final stage in stages) {
-        final lessonProgress = await _lessonRepository
+        final lessonProgress = await _lessonRepository!
             .getStageCompletionPercentage(stage.id);
         progress[stage.id] = lessonProgress;
       }
