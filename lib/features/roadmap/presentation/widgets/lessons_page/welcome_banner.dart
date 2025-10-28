@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_text_styles.dart';
+import '../../../../../core/utils/responsive_utils.dart';
 import '../../../../../features/auth/controller/auth_controller.dart';
 
 /// Welcome banner shown to first-time users.
@@ -26,6 +27,7 @@ class WelcomeBanner extends StatelessWidget {
     final authController = Get.find<AuthController>();
     final user = authController.currentUser.value;
     final isGuest = authController.isGuest;
+    final isDesktop = MediaQuery.of(context).size.width > 900;
 
     String greeting = 'Start Your Journey! 🚀';
     String subtitle = 'Tap the first lesson below to begin learning Flutter';
@@ -40,8 +42,8 @@ class WelcomeBanner extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.all(isDesktop ? 24 : 16),
+      margin: EdgeInsets.only(bottom: isDesktop ? 24 : 16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -49,25 +51,37 @@ class WelcomeBanner extends StatelessWidget {
             AppColors.success.withOpacity(0.1),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.info.withOpacity(0.3), width: 2),
+        borderRadius: BorderRadius.circular(isDesktop ? 20 : 16),
+        border: Border.all(
+          color: AppColors.info.withOpacity(0.3),
+          width: isDesktop ? 2.5 : 2,
+        ),
+        boxShadow: isDesktop
+            ? [
+                BoxShadow(
+                  color: AppColors.info.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
       ),
       child: Row(
         children: [
           // Icon container
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(isDesktop ? 16 : 12),
             decoration: BoxDecoration(
               color: AppColors.info.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(isDesktop ? 16 : 12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.rocket_launch,
               color: AppColors.info,
-              size: 32,
+              size: isDesktop ? 40 : 32,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: isDesktop ? 24 : 16),
 
           // Welcome message
           Expanded(
@@ -76,12 +90,16 @@ class WelcomeBanner extends StatelessWidget {
               children: [
                 Text(
                   greeting,
-                  style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
+                  style: (isDesktop ? AppTextStyles.h2 : AppTextStyles.h3)
+                      .copyWith(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: isDesktop ? 8 : 4),
                 Text(
                   subtitle,
-                  style: AppTextStyles.bodySmall.copyWith(
+                  style: (isDesktop
+                          ? AppTextStyles.bodyLarge
+                          : AppTextStyles.bodySmall)
+                      .copyWith(
                     color: Theme.of(
                       context,
                     ).textTheme.bodyMedium?.color?.withOpacity(0.7),
