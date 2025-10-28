@@ -18,7 +18,7 @@ import 'package:flutter_mate/features/progress_tracker/controller/progress_track
 import 'package:flutter_mate/features/progress_tracker/presentation/pages/progress_tracker_page.dart';
 import 'package:flutter_mate/features/assistant/controller/assistant_binding.dart';
 import 'package:flutter_mate/features/assistant/presentation/pages/assistant_page.dart';
-import 'package:flutter_mate/features/assistant/presentation/pages/profile_page.dart';
+import 'package:flutter_mate/features/profile_page/presentation/pages/profile_page.dart';
 import 'package:flutter_mate/features/quiz/controller/quiz_binding.dart';
 import 'package:flutter_mate/features/quiz/presentation/pages/quiz_page.dart';
 import 'package:flutter_mate/features/achievements/presentation/pages/achievements_page.dart';
