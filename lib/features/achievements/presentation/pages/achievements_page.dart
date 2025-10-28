@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:flutter_mate/core/utils/responsive_utils.dart';
+import 'package:flutter_mate/core/utils/auth_utils.dart';
 import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
 import '../../controller/achievement_controller.dart';
 import '../../data/models/achievement.dart';
@@ -12,6 +13,60 @@ class AchievementsPage extends GetView<AchievementController> {
   @override
   Widget build(BuildContext context) {
     final isDesktop = ResponsiveUtils.isDesktop(context);
+
+    // Check authentication status (without showing dialog during build)
+    final isAuth = AuthUtils.isAuthenticated();
+
+    if (!isAuth) {
+      // Show auth dialog after build completes
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!AuthUtils.isAuthenticated()) {
+          AuthUtils.requireAuth(
+            title: 'Achievements Locked',
+            message:
+                'Create an account to unlock achievements, earn XP, and track your learning milestones.',
+          );
+        }
+      });
+
+      // Return a placeholder screen for guests
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Achievements'),
+          backgroundColor: Colors.amber.shade700,
+          foregroundColor: Colors.white,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.emoji_events_outlined,
+                size: 80,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Achievements',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Sign up to earn badges and track XP',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(

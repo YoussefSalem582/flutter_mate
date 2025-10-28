@@ -62,7 +62,10 @@ class StageCard extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => Get.toNamed('/lessons', arguments: stage),
+          onTap: () {
+            // Navigate to lessons without auth check
+            Get.toNamed('/lessons', arguments: stage);
+          },
           borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -84,9 +87,8 @@ class StageCard extends StatelessWidget {
                   label: '',
                   value: progress,
                   color: stage.color,
-                  backgroundColor: isDark
-                      ? Colors.grey.shade800
-                      : Colors.grey.shade200,
+                  backgroundColor:
+                      isDark ? Colors.grey.shade800 : Colors.grey.shade200,
                   showPercentage: false,
                   height: 10,
                 ),

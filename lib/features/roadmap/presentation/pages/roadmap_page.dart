@@ -8,6 +8,7 @@ import 'package:flutter_mate/features/roadmap/presentation/widgets/roadmap_page/
 import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
 import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
 import 'package:flutter_mate/shared/widgets/app_bar_widget.dart';
+import 'package:flutter_mate/shared/widgets/desktop_sidebar.dart';
 
 /// Roadmap page showing learning path from beginner to advanced.
 ///
@@ -137,21 +138,10 @@ class RoadmapPage extends GetView<RoadmapController> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Left sidebar with header and stats
-        Container(
-          width: 350,
-          padding: EdgeInsets.all(padding),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : Colors.grey[100],
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(2, 0),
-              ),
-            ],
-          ),
-          child: Column(
+        // Fixed sidebar with navigation
+        DesktopSidebar(
+          isDark: isDark,
+          topContent: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Guest user banner
@@ -167,9 +157,6 @@ class RoadmapPage extends GetView<RoadmapController> {
               RoadmapHeader(overallProgress: overallProgress),
               const SizedBox(height: 32),
               StatsSummary(isDark: isDark),
-              const SizedBox(height: 32),
-              // Desktop navigation
-              _buildDesktopNavigation(isDark),
             ],
           ),
         ),
@@ -189,48 +176,6 @@ class RoadmapPage extends GetView<RoadmapController> {
           ),
         ),
       ],
-    );
-  }
-
-  /// Desktop navigation menu
-  Widget _buildDesktopNavigation(bool isDark) {
-    final menuItems = [
-      {'icon': Icons.dashboard, 'label': 'Dashboard', 'route': '/roadmap'},
-      {
-        'icon': Icons.track_changes,
-        'label': 'Progress',
-        'route': '/progress-tracker'
-      },
-      {'icon': Icons.code, 'label': 'Playground', 'route': '/code-playground'},
-      {'icon': Icons.person, 'label': 'Profile', 'route': '/profile'},
-    ];
-
-    final primaryColor =
-        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: menuItems.map((item) {
-        final isActive = Get.currentRoute == item['route'];
-        return ListTile(
-          leading: Icon(
-            item['icon'] as IconData,
-            color: isActive ? primaryColor : null,
-          ),
-          title: Text(
-            item['label'] as String,
-            style: TextStyle(
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              color: isActive ? primaryColor : null,
-            ),
-          ),
-          selected: isActive,
-          onTap: () => Get.toNamed(item['route'] as String),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        );
-      }).toList(),
     );
   }
 
@@ -297,7 +242,7 @@ class RoadmapPage extends GetView<RoadmapController> {
           const SizedBox(width: 8),
           ElevatedButton(
             onPressed: () {
-              Get.toNamed(AppRoutes.signup);
+              Get.offAllNamed(AppRoutes.onboarding);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,

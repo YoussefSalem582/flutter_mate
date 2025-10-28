@@ -9,6 +9,7 @@ import 'package:flutter_mate/features/progress_tracker/controller/progress_track
 import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
 import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
 import 'package:flutter_mate/shared/widgets/app_bar_widget.dart';
+import 'package:flutter_mate/shared/widgets/desktop_sidebar.dart';
 import '../widgets/widgets.dart';
 
 /// Progress tracker page to monitor learning achievements.
@@ -107,61 +108,80 @@ class ProgressTrackerPage extends GetView<ProgressTrackerController> {
     );
   }
 
-  /// Desktop layout - Two column grid
+  /// Desktop layout - Two column layout with fixed sidebar
   Widget _buildDesktopLayout(BuildContext context, double padding) {
-    return ListView(
-      padding: EdgeInsets.all(padding * 1.5),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildWelcomeBanner(context),
-        const SizedBox(height: 24),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Left column
-            Expanded(
-              flex: 2,
-              child: Column(
-                children: [
-                  const OverallProgressCard()
-                      .animate()
-                      .fadeIn()
-                      .scale(duration: 600.ms),
-                  const SizedBox(height: 24),
-                  const QuizStatsCard()
-                      .animate()
-                      .fadeIn(delay: 250.ms)
-                      .slideX(begin: -0.2),
-                  const SizedBox(height: 24),
-                  const XPProgressCard()
-                      .animate()
-                      .fadeIn(delay: 300.ms)
-                      .slideX(begin: -0.2),
-                ],
-              ),
-            ),
-            const SizedBox(width: 24),
-            // Right column
-            Expanded(
-              flex: 3,
-              child: Column(
-                children: [
-                  const StatsGrid()
-                      .animate()
-                      .fadeIn(delay: 200.ms)
-                      .slideY(begin: 0.2),
-                  const SizedBox(height: 24),
-                  const WeeklyActivityChart()
-                      .animate()
-                      .fadeIn(delay: 400.ms)
-                      .slideX(begin: 0.2),
-                  const SizedBox(height: 24),
-                  _buildRecentActivity(context),
-                ],
-              ),
-            ),
-          ],
+        // Fixed sidebar with navigation
+        DesktopSidebar(
+          isDark: isDark,
+          topContent: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildWelcomeBanner(context),
+              const SizedBox(height: 24),
+              const OverallProgressCard()
+                  .animate()
+                  .fadeIn()
+                  .scale(duration: 600.ms),
+            ],
+          ),
         ),
-        const SizedBox(height: 100),
+
+        // Main content area
+        Expanded(
+          child: ListView(
+            padding: EdgeInsets.all(padding * 1.5),
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Left column
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      children: [
+                        const QuizStatsCard()
+                            .animate()
+                            .fadeIn(delay: 250.ms)
+                            .slideX(begin: -0.2),
+                        const SizedBox(height: 24),
+                        const XPProgressCard()
+                            .animate()
+                            .fadeIn(delay: 300.ms)
+                            .slideX(begin: -0.2),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+                  // Right column
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      children: [
+                        const StatsGrid()
+                            .animate()
+                            .fadeIn(delay: 200.ms)
+                            .slideY(begin: 0.2),
+                        const SizedBox(height: 24),
+                        const WeeklyActivityChart()
+                            .animate()
+                            .fadeIn(delay: 400.ms)
+                            .slideX(begin: 0.2),
+                        const SizedBox(height: 24),
+                        _buildRecentActivity(context),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 100),
+            ],
+          ),
+        ),
       ],
     );
   }

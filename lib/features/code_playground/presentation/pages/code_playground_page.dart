@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_mate/core/utils/responsive_utils.dart';
+import 'package:flutter_mate/core/utils/auth_utils.dart';
 import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
 import '../../controller/code_playground_controller.dart';
 import '../widgets/code_editor_widget.dart';
@@ -41,6 +42,62 @@ class CodePlaygroundPage extends GetView<CodePlaygroundController> {
   @override
   Widget build(BuildContext context) {
     final isDesktop = ResponsiveUtils.isDesktop(context);
+
+    // Check authentication status (without showing dialog during build)
+    final isAuth = AuthUtils.isAuthenticated();
+
+    if (!isAuth) {
+      // Show auth dialog after build completes
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!AuthUtils.isAuthenticated()) {
+          AuthUtils.requireAuth(
+            title: 'Code Playground Access',
+            message:
+                'Sign up to access the interactive code playground and practice Dart programming.',
+          );
+        }
+      });
+
+      // Return a placeholder screen for guests
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Code Playground'),
+          backgroundColor: Colors.indigo,
+          foregroundColor: Colors.white,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.lock_outline,
+                size: 80,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Code Playground',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Sign up to unlock this feature',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+        bottomNavigationBar:
+            isDesktop ? null : const AppBottomNavBar(currentIndex: 2),
+      );
+    }
 
     // Safety check: Ensure controller is registered before rendering
     // If not registered, show loading state instead of crashing

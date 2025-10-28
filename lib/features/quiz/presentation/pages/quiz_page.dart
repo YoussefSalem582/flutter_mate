@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_mate/core/utils/responsive_utils.dart';
+import 'package:flutter_mate/core/utils/auth_utils.dart';
 import '../../controller/quiz_controller.dart';
 import '../widgets/widgets.dart';
 
@@ -12,6 +13,58 @@ class QuizPage extends GetView<QuizController> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Check authentication status (without showing dialog during build)
+    final isAuth = AuthUtils.isAuthenticated();
+
+    if (!isAuth) {
+      // Show auth dialog after build completes
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!AuthUtils.isAuthenticated()) {
+          AuthUtils.requireAuth(
+            title: 'Quiz Access',
+            message:
+                'Create an account to take quizzes, earn XP, and test your knowledge.',
+          );
+        }
+      });
+
+      // Return a placeholder screen for guests
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Quiz'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.quiz_outlined,
+                size: 80,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Quizzes Locked',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Sign up to test your knowledge',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     // Get lessonId from arguments to display
     final args = Get.arguments;

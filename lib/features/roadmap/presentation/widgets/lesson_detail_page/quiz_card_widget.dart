@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../../../core/constants/app_colors.dart';
 import '../../../../../../core/constants/app_text_styles.dart';
+import '../../../../../../core/utils/auth_utils.dart';
 import '../../../data/models/lesson.dart';
 
 /// Quiz card widget with quick info and start button.
@@ -168,8 +169,18 @@ class QuizCardWidget extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () =>
-                  Get.toNamed('/quiz', arguments: {'lessonId': lesson.id}),
+              onPressed: () {
+                // Check authentication before starting quiz
+                if (!AuthUtils.requireAuth(
+                  title: 'Quiz Access',
+                  message:
+                      'Create an account to take quizzes, earn XP, and test your knowledge.',
+                )) {
+                  return; // User is guest, dialog shown
+                }
+                // User is authenticated, navigate to quiz
+                Get.toNamed('/quiz', arguments: {'lessonId': lesson.id});
+              },
               icon: const Icon(Icons.play_arrow_rounded),
               label: const Text('Start Quiz'),
               style: ElevatedButton.styleFrom(

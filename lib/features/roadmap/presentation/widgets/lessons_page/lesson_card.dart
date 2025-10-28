@@ -51,9 +51,8 @@ class LessonCard extends StatelessWidget {
         color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isCompleted
-              ? stage.color.withOpacity(0.5)
-              : Colors.transparent,
+          color:
+              isCompleted ? stage.color.withOpacity(0.5) : Colors.transparent,
           width: 2,
         ),
         boxShadow: [
@@ -91,10 +90,10 @@ class LessonCard extends StatelessWidget {
                               color: canAccess
                                   ? Theme.of(context).textTheme.bodyLarge?.color
                                   : Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.color
-                                        ?.withOpacity(0.5),
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color
+                                      ?.withOpacity(0.5),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -136,7 +135,10 @@ class LessonCard extends StatelessWidget {
                 Text(
                   lesson.description,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: Theme.of(context).textTheme.bodyMedium?.color
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.color
                         ?.withOpacity(canAccess ? 0.8 : 0.5),
                     height: 1.5,
                   ),

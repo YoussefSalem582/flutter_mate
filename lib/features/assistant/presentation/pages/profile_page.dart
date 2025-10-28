@@ -6,8 +6,10 @@ import 'package:flutter_mate/core/constants/app_colors.dart';
 import 'package:flutter_mate/core/constants/app_text_styles.dart';
 import 'package:flutter_mate/core/routes/app_routes.dart';
 import 'package:flutter_mate/core/utils/responsive_utils.dart';
+import 'package:flutter_mate/core/utils/auth_utils.dart';
 import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
 import 'package:flutter_mate/shared/widgets/app_bar_widget.dart';
+import 'package:flutter_mate/shared/widgets/desktop_sidebar.dart';
 import 'package:flutter_mate/features/achievements/controller/achievement_controller.dart';
 import 'package:flutter_mate/features/achievements/data/models/achievement.dart';
 import 'package:flutter_mate/features/progress_tracker/controller/progress_tracker_controller.dart';
@@ -61,6 +63,14 @@ class ProfilePage extends GetView<ProgressTrackerController> {
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
+              // Check if user is authenticated
+              if (!AuthUtils.requireAuth(
+                title: 'Profile Editing',
+                message:
+                    'Create an account to edit your profile and customize your learning experience.',
+              )) {
+                return;
+              }
               Get.snackbar(
                 'Coming Soon',
                 'Profile editing will be available soon',
@@ -207,40 +217,49 @@ class ProfilePage extends GetView<ProgressTrackerController> {
     ThemeManager themeManager,
     AchievementController achievementController,
   ) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(32),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1400),
-          child: Row(
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Fixed sidebar with navigation
+        DesktopSidebar(
+          isDark: isDark,
+          topContent: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Left Column - Profile & Achievements
-              Expanded(
-                flex: 2,
+              Obx(() {
+                final header = _buildProfileHeader(
+                  context,
+                  isDark,
+                  achievementController,
+                );
+                return header.animate().fadeIn().scale(duration: 600.ms);
+              }),
+              const SizedBox(height: 24),
+              Obx(() {
+                final badges = _buildAchievementBadges(
+                  context,
+                  isDark,
+                  achievementController,
+                );
+                return badges
+                    .animate()
+                    .fadeIn(delay: 200.ms)
+                    .slideY(begin: 0.2);
+              }),
+            ],
+          ),
+        ),
+
+        // Main content area
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(32),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1000),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Obx(() {
-                      final header = _buildProfileHeader(
-                        context,
-                        isDark,
-                        achievementController,
-                      );
-                      return header.animate().fadeIn().scale(duration: 600.ms);
-                    }),
-                    const SizedBox(height: 24),
-                    Obx(() {
-                      final badges = _buildAchievementBadges(
-                        context,
-                        isDark,
-                        achievementController,
-                      );
-                      return badges
-                          .animate()
-                          .fadeIn(delay: 200.ms)
-                          .slideY(begin: 0.2);
-                    }),
-                    const SizedBox(height: 24),
                     Text(
                       'Statistics',
                       style: AppTextStyles.h3.copyWith(
@@ -256,16 +275,7 @@ class ProfilePage extends GetView<ProgressTrackerController> {
                           .fadeIn(delay: 400.ms)
                           .slideX(begin: -0.2);
                     }),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 32),
-              // Right Column - Settings & Preferences
-              Expanded(
-                flex: 3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                    const SizedBox(height: 32),
                     _buildSectionHeader(
                       context,
                       'Learning Preferences',
@@ -299,13 +309,14 @@ class ProfilePage extends GetView<ProgressTrackerController> {
                       context,
                       isDark,
                     ).animate().fadeIn(delay: 1000.ms).slideX(begin: 0.2),
+                    const SizedBox(height: 100), // Bottom padding
                   ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 
