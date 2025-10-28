@@ -113,19 +113,19 @@ class CodePlaygroundPage extends GetView<CodePlaygroundController> {
   }
 
   Widget _buildDesktopLayout() {
-    return Row(
+    return const Row(
       children: [
         // Code Editor Section (50% of screen width)
         Expanded(
           child: Column(
             children: [
-              const Expanded(child: CodeEditorWidget()),
-              const ControlButtonsWidget(),
+              Expanded(child: CodeEditorWidget()),
+              ControlButtonsWidget(),
             ],
           ),
         ),
         // Output Console Section (50% of screen width)
-        const Expanded(child: OutputConsoleWidget()),
+        Expanded(child: OutputConsoleWidget()),
       ],
     );
   }

@@ -1,6 +1,7 @@
 /// Barrel file for lessons page widgets
 ///
 /// These widgets are specifically used in lessons_page.dart
+library;
 
 export 'advanced_mode_banner.dart';
 export 'welcome_banner.dart';

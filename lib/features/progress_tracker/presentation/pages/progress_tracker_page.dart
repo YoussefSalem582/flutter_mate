@@ -6,6 +6,7 @@ import 'package:flutter_mate/core/constants/app_colors.dart';
 import 'package:flutter_mate/core/constants/app_text_styles.dart';
 import 'package:flutter_mate/core/utils/responsive_utils.dart';
 import 'package:flutter_mate/features/progress_tracker/controller/progress_tracker_controller.dart';
+import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
 import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
 import 'package:flutter_mate/shared/widgets/app_bar_widget.dart';
 import '../widgets/widgets.dart';
@@ -79,6 +80,8 @@ class ProgressTrackerPage extends GetView<ProgressTrackerController> {
     return ListView(
       padding: EdgeInsets.all(padding),
       children: [
+        _buildWelcomeBanner(context),
+        const SizedBox(height: 20),
         const OverallProgressCard().animate().fadeIn().scale(duration: 600.ms),
         const SizedBox(height: 20),
         const StatsGrid().animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
@@ -109,6 +112,8 @@ class ProgressTrackerPage extends GetView<ProgressTrackerController> {
     return ListView(
       padding: EdgeInsets.all(padding * 1.5),
       children: [
+        _buildWelcomeBanner(context),
+        const SizedBox(height: 24),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -189,5 +194,73 @@ class ProgressTrackerPage extends GetView<ProgressTrackerController> {
         }),
       ],
     );
+  }
+
+  /// Welcome banner with personalized greeting
+  Widget _buildWelcomeBanner(BuildContext context) {
+    final authController = Get.find<AuthController>();
+    final user = authController.currentUser.value;
+    final isGuest = authController.isGuest;
+
+    String greeting = 'Welcome to Your Progress';
+    if (user != null && !isGuest) {
+      final name = user.displayName ?? user.email.split('@')[0];
+      greeting = 'Welcome back, $name!';
+    } else if (isGuest) {
+      greeting = 'Welcome, Guest!';
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.success.withOpacity(0.7),
+            AppColors.info.withOpacity(0.7),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.track_changes,
+              color: Colors.white,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  greeting,
+                  style: AppTextStyles.h3.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Track your learning journey',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn().slideY(begin: -0.2);
   }
 }

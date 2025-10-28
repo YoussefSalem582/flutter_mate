@@ -156,7 +156,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     Center(
                       child: TextButton(
                         onPressed: () => Get.back(),
-                        child: Text(
+                        child: const Text(
                           'Back to Sign In',
                           style: TextStyle(
                             color: AppColors.lightPrimary,

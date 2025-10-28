@@ -1,6 +1,7 @@
 /// Barrel file for shared widgets
 ///
 /// Exports all reusable UI components used across the app
+library;
 
 export 'custom_button.dart';
 export 'custom_progress_bar.dart';

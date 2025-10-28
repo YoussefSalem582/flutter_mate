@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_mate/core/routes/app_routes.dart';
 import 'package:flutter_mate/core/routes/custom_page_transitions.dart';
+import 'package:flutter_mate/core/middleware/auth_middleware.dart';
 import 'package:flutter_mate/features/onboarding/pages/splash_page.dart';
 import 'package:flutter_mate/features/onboarding/pages/onboarding_page.dart';
 import 'package:flutter_mate/features/auth/presentation/pages/login_page.dart';
@@ -41,6 +42,7 @@ class AppPages {
       page: () => const OnboardingPage(),
       customTransition: SmoothPageTransition(),
       transitionDuration: const Duration(milliseconds: 400),
+      middlewares: [GuestMiddleware()],
     ),
 
     // Authentication routes
@@ -49,18 +51,21 @@ class AppPages {
       page: () => const LoginPage(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
+      middlewares: [GuestMiddleware()],
     ),
     GetPage(
       name: AppRoutes.signup,
       page: () => const SignUpPage(),
       customTransition: SmoothPageTransition(),
       transitionDuration: const Duration(milliseconds: 350),
+      middlewares: [GuestMiddleware()],
     ),
     GetPage(
       name: AppRoutes.forgotPassword,
       page: () => const ForgotPasswordPage(),
       customTransition: SmoothPageTransition(),
       transitionDuration: const Duration(milliseconds: 350),
+      middlewares: [GuestMiddleware()],
     ),
     GetPage(
       name: AppRoutes.emailVerification,

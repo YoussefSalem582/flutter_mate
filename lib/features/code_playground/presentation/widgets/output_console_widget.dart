@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
 import '../../controller/code_playground_controller.dart';
 
 /// Output Console Widget for displaying code execution results.
@@ -141,16 +142,38 @@ class OutputConsoleWidget extends GetView<CodePlaygroundController> {
   /// Builds the empty state UI when no output is available.
   ///
   /// Shows:
+  /// - Personalized greeting based on auth state
   /// - Large code-off icon
   /// - "No output yet" message
   /// - Helpful instruction text
   Widget _buildEmptyState() {
+    final authController = Get.find<AuthController>();
+    final user = authController.currentUser.value;
+    final isGuest = authController.isGuest;
+
+    String greeting = 'Happy Coding!';
+    if (user != null && !isGuest) {
+      final name = user.displayName ?? user.email.split('@')[0];
+      greeting = 'Happy Coding, $name!';
+    } else if (isGuest) {
+      greeting = 'Happy Coding, Guest!';
+    }
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.code_off_rounded, size: 64, color: Colors.grey.shade300),
           const SizedBox(height: 16),
+          Text(
+            greeting,
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
           Text(
             'No output yet',
             style: TextStyle(

@@ -1,6 +1,7 @@
 /// Barrel file for progress tracker widgets.
 ///
 /// Exports all reusable UI components for the progress tracker feature.
+library;
 
 export 'overall_progress_card.dart';
 export 'stats_grid.dart';

@@ -139,7 +139,7 @@ class _LoginPageState extends State<LoginPage> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () => Get.toNamed('/forgot-password'),
-                        child: Text(
+                        child: const Text(
                           'Forgot Password?',
                           style: TextStyle(
                             color: AppColors.lightPrimary,

@@ -55,22 +55,37 @@ class _SplashPageState extends State<SplashPage>
     await Future.delayed(const Duration(milliseconds: 2500));
     if (!mounted) return;
 
-    // Check if user has seen onboarding
-    final prefs = Get.find<SharedPreferences>();
-    final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+    try {
+      // Check authentication status first
+      final authController = Get.find<AuthController>();
 
-    // Check authentication status
-    final authController = Get.find<AuthController>();
+      // Wait a bit for auth state to be determined
+      await Future.delayed(const Duration(milliseconds: 500));
 
-    if (!hasSeenOnboarding) {
-      // First time user - show onboarding
-      Get.offAllNamed(AppRoutes.onboarding);
-    } else if (authController.isAuthenticated.value) {
-      // User is logged in - go to roadmap (home)
-      Get.offAllNamed(AppRoutes.roadmap);
-    } else {
-      // User has seen onboarding but not logged in - go to login
-      Get.offAllNamed(AppRoutes.login);
+      // Check if user has seen onboarding
+      final prefs = Get.find<SharedPreferences>();
+      final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+
+      if (authController.isAuthenticated.value) {
+        // User is logged in - go straight to roadmap (home)
+        Get.offAllNamed(AppRoutes.roadmap);
+      } else if (!hasSeenOnboarding) {
+        // First time user - show onboarding
+        Get.offAllNamed(AppRoutes.onboarding);
+      } else {
+        // User has seen onboarding but not logged in - go to login
+        Get.offAllNamed(AppRoutes.login);
+      }
+    } catch (e) {
+      // If auth controller is not initialized, show onboarding
+      final prefs = Get.find<SharedPreferences>();
+      final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+
+      if (!hasSeenOnboarding) {
+        Get.offAllNamed(AppRoutes.onboarding);
+      } else {
+        Get.offAllNamed(AppRoutes.login);
+      }
     }
   }
 

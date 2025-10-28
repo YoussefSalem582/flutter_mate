@@ -6,12 +6,18 @@ import 'package:flutter/foundation.dart'
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
-/// SECURITY NOTE: This file is safe to commit to public repositories
-/// All sensitive API keys are tokenized and must be provided at build time via --dart-define
+/// SECURITY BEST PRACTICES:
 ///
-/// Build with your actual keys:
-/// flutter build web --dart-define=FIREBASE_API_KEY_WEB=your_key_here
-/// flutter build apk --dart-define=FIREBASE_API_KEY_ANDROID=your_key_here
+/// For LOCAL DEVELOPMENT:
+/// 1. Copy .env.example to .env
+/// 2. Fill in your actual API keys in .env
+/// 3. The .env file is gitignored and won't be committed
+/// 4. Keys are hardcoded below as fallback (safe for public repo)
+///
+/// For PRODUCTION BUILDS:
+/// Use --dart-define to inject keys at build time:
+/// flutter build web --dart-define=FIREBASE_API_KEY_WEB=your_key
+/// flutter build apk --dart-define=FIREBASE_API_KEY_ANDROID=your_key
 ///
 /// Example:
 /// ```dart
@@ -50,42 +56,47 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // Web configuration - ALL KEYS TOKENIZED
-  // Must provide at build time: --dart-define=FIREBASE_API_KEY_WEB=your_actual_key
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: String.fromEnvironment(
-      'FIREBASE_API_KEY_WEB',
-      defaultValue: 'REPLACE_WITH_YOUR_WEB_API_KEY',
-    ),
-    appId: String.fromEnvironment(
-      'FIREBASE_APP_ID_WEB',
-      defaultValue: '1:320880192368:web:3c9d8e1cd3eff3ef5efdb5',
-    ),
-    messagingSenderId: '320880192368',
-    projectId: 'fir-3840b',
-    authDomain: 'fir-3840b.firebaseapp.com',
-    storageBucket: 'fir-3840b.firebasestorage.app',
-    measurementId: String.fromEnvironment(
-      'FIREBASE_MEASUREMENT_ID_WEB',
-      defaultValue: 'G-XXXXXXXXXX',
-    ),
-  );
+  // Web configuration - Development mode (hardcoded for local development)
+  // For production, use: flutter build web --dart-define=FIREBASE_API_KEY_WEB=your_actual_key
+  static FirebaseOptions get web {
+    // Try to get from environment first (for production builds)
+    const envApiKey = String.fromEnvironment('FIREBASE_API_KEY_WEB');
+    const envMeasurementId =
+        String.fromEnvironment('FIREBASE_MEASUREMENT_ID_WEB');
 
-  // Android configuration - ALL KEYS TOKENIZED
-  // Must provide at build time: --dart-define=FIREBASE_API_KEY_ANDROID=your_actual_key
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: String.fromEnvironment(
-      'FIREBASE_API_KEY_ANDROID',
-      defaultValue: 'REPLACE_WITH_YOUR_ANDROID_API_KEY',
-    ),
-    appId: String.fromEnvironment(
-      'FIREBASE_APP_ID_ANDROID',
-      defaultValue: '1:320880192368:android:54d1937257d7ec255efdb5',
-    ),
-    messagingSenderId: '320880192368',
-    projectId: 'fir-3840b',
-    storageBucket: 'fir-3840b.firebasestorage.app',
-  );
+    // Use environment variables if provided, otherwise use development defaults
+    return FirebaseOptions(
+      apiKey: envApiKey.isNotEmpty
+          ? envApiKey
+          : 'AIzaSyCPCEK_KS_3mYqVWWQvBW1QuaturMYvv68', // Web API key
+      appId: '1:320880192368:web:3c9d8e1cd3eff3ef5efdb5',
+      messagingSenderId: '320880192368',
+      projectId: 'fir-3840b',
+      authDomain: 'fir-3840b.firebaseapp.com',
+      storageBucket: 'fir-3840b.firebasestorage.app',
+      measurementId: envMeasurementId.isNotEmpty
+          ? envMeasurementId
+          : 'G-2Q4VS3VC1R', // Web measurement ID
+    );
+  }
+
+  // Android configuration - Development mode (hardcoded for local development)
+  // For production, use: flutter build apk --dart-define=FIREBASE_API_KEY_ANDROID=your_actual_key
+  static FirebaseOptions get android {
+    // Try to get from environment first (for production builds)
+    const envApiKey = String.fromEnvironment('FIREBASE_API_KEY_ANDROID');
+
+    // Use environment variables if provided, otherwise use development defaults
+    return FirebaseOptions(
+      apiKey: envApiKey.isNotEmpty
+          ? envApiKey
+          : 'AIzaSyCfwUtmBwVxaJZbJLOsc3X2w3JWc50oDyg', // Android API key
+      appId: '1:320880192368:android:54d1937257d7ec255efdb5',
+      messagingSenderId: '320880192368',
+      projectId: 'fir-3840b',
+      storageBucket: 'fir-3840b.firebasestorage.app',
+    );
+  }
 
   // iOS configuration - ALL KEYS TOKENIZED
   // Must provide at build time: --dart-define=FIREBASE_API_KEY_IOS=your_actual_key

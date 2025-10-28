@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:get/get.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_text_styles.dart';
+import '../../../../../features/auth/controller/auth_controller.dart';
 
 /// Welcome banner shown to first-time users.
 ///
@@ -21,6 +23,22 @@ class WelcomeBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authController = Get.find<AuthController>();
+    final user = authController.currentUser.value;
+    final isGuest = authController.isGuest;
+
+    String greeting = 'Start Your Journey! 🚀';
+    String subtitle = 'Tap the first lesson below to begin learning Flutter';
+
+    if (user != null && !isGuest) {
+      final name = user.displayName ?? user.email.split('@')[0];
+      greeting = 'Welcome, $name! 🚀';
+      subtitle = 'Ready to master Flutter? Start with your first lesson below';
+    } else if (isGuest) {
+      greeting = 'Welcome, Guest! 🚀';
+      subtitle = 'Sign up to save your progress as you learn';
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 16),
@@ -57,12 +75,12 @@ class WelcomeBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Start Your Journey! 🚀',
+                  greeting,
                   style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Tap the first lesson below to begin learning Flutter',
+                  subtitle,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Theme.of(
                       context,

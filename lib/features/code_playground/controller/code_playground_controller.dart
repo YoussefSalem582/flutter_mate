@@ -289,8 +289,8 @@ class CodePlaygroundController extends GetxController {
           endIndex++;
         }
 
-        while (endIndex < length &&
-            RegExp(r'[0-9.]').hasMatch(line[endIndex])) {
+        while (
+            endIndex < length && RegExp(r'[0-9.]').hasMatch(line[endIndex])) {
           endIndex++;
         }
 
@@ -377,7 +377,7 @@ class CodePlaygroundController extends GetxController {
       // Default: collect text until next special character
       var endIndex = currentIndex;
       while (endIndex < length &&
-          !RegExp(r'[0-9"\[\]{}(),:' + r"']").hasMatch(line[endIndex])) {
+          !RegExp(r'[0-9"\[\]{}(),:' r"']").hasMatch(line[endIndex])) {
         // Check for keywords ahead
         var hasKeywordAhead = false;
         for (final keyword in ['true', 'false', 'null', ...keywords]) {

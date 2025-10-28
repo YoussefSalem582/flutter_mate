@@ -235,7 +235,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                         TextButton(
                           onPressed: () => Get.back(),
-                          child: Text(
+                          child: const Text(
                             'Sign In',
                             style: TextStyle(
                               color: AppColors.lightPrimary,

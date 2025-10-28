@@ -10,6 +10,7 @@
 /// - InfoChip (duration, metadata)
 /// - DifficultyChip (easy/medium/hard)
 /// - CustomProgressBar (progress tracking)
+library;
 
 // Export all lesson detail page widgets
 export 'lesson_detail_page/widgets.dart';

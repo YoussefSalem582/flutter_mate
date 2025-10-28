@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_mate/core/constants/app_colors.dart';
+import 'package:flutter_mate/core/routes/app_routes.dart';
 import 'package:flutter_mate/core/utils/responsive_utils.dart';
 import 'package:flutter_mate/features/roadmap/controller/roadmap_controller.dart';
 import 'package:flutter_mate/features/roadmap/presentation/widgets/roadmap_page/widgets.dart';
+import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
 import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
 import 'package:flutter_mate/shared/widgets/app_bar_widget.dart';
 
@@ -98,9 +100,21 @@ class RoadmapPage extends GetView<RoadmapController> {
   /// Mobile layout - Vertical scrolling list
   Widget _buildMobileLayout(
       double overallProgress, bool isDark, double padding) {
+    final authController = Get.find<AuthController>();
+
     return ListView(
       padding: EdgeInsets.all(padding),
       children: [
+        // Guest user banner
+        Obx(() {
+          if (authController.isGuest) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _buildGuestBanner(isDark),
+            );
+          }
+          return const SizedBox.shrink();
+        }),
         RoadmapHeader(overallProgress: overallProgress),
         const SizedBox(height: 24),
         StatsSummary(isDark: isDark),
@@ -118,6 +132,8 @@ class RoadmapPage extends GetView<RoadmapController> {
   /// Desktop layout - Two column layout with fixed sidebar
   Widget _buildDesktopLayout(
       double overallProgress, bool isDark, double padding) {
+    final authController = Get.find<AuthController>();
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -138,6 +154,16 @@ class RoadmapPage extends GetView<RoadmapController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Guest user banner
+              Obx(() {
+                if (authController.isGuest) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _buildGuestBanner(isDark),
+                  );
+                }
+                return const SizedBox.shrink();
+              }),
               RoadmapHeader(overallProgress: overallProgress),
               const SizedBox(height: 32),
               StatsSummary(isDark: isDark),
@@ -205,6 +231,93 @@ class RoadmapPage extends GetView<RoadmapController> {
           ),
         );
       }).toList(),
+    );
+  }
+
+  /// Guest user banner prompting to create an account
+  Widget _buildGuestBanner(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.warning.withOpacity(0.8),
+            AppColors.warning,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.warning.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.info_outline,
+              color: Colors.white,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Guest Mode',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Create an account to save your progress',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: () {
+              Get.toNamed(AppRoutes.signup);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.warning,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 10,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Sign Up',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

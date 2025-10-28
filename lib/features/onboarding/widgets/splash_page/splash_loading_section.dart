@@ -37,13 +37,13 @@ class SplashLoadingSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             PreparationPill(icon: Icons.school_rounded, label: 'Lessons'),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             PreparationPill(icon: Icons.auto_graph_rounded, label: 'Progress'),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             PreparationPill(icon: Icons.smart_toy_rounded, label: 'Assistant'),
           ],
         ),

@@ -1,6 +1,7 @@
 /// Barrel file for lesson detail page widgets
 ///
 /// These widgets are specifically used in lesson_detail_page.dart
+library;
 
 export 'code_playground_card_widget.dart';
 export 'exercise_bottom_sheet.dart';

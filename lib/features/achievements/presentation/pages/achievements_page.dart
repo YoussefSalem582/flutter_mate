@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:flutter_mate/core/utils/responsive_utils.dart';
+import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
 import '../../controller/achievement_controller.dart';
 import '../../data/models/achievement.dart';
 
@@ -48,6 +49,32 @@ class AchievementsPage extends GetView<AchievementController> {
             ),
             child: Column(
               children: [
+                // Personalized greeting
+                Builder(
+                  builder: (context) {
+                    final authController = Get.find<AuthController>();
+                    final user = authController.currentUser.value;
+                    final isGuest = authController.isGuest;
+
+                    String greeting = 'Your Achievements';
+                    if (user != null && !isGuest) {
+                      final name = user.displayName ?? user.email.split('@')[0];
+                      greeting = "$name's Achievements";
+                    } else if (isGuest) {
+                      greeting = 'Guest Achievements';
+                    }
+
+                    return Text(
+                      greeting,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
                 const Text(
                   'Total XP',
                   style: TextStyle(color: Colors.white70, fontSize: 16),

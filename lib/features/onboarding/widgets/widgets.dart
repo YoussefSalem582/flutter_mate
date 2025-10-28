@@ -1,4 +1,5 @@
 /// Barrel file exporting all onboarding widgets.
+library;
 
 // Onboarding widgets
 export 'onboarding_page/onboarding_background.dart';

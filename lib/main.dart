@@ -16,10 +16,20 @@ void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // Initialize Firebase (only if not already initialized)
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    if (e.toString().contains('duplicate-app')) {
+      // Firebase already initialized, this is fine during hot reload
+      debugPrint('Firebase already initialized');
+    } else {
+      // Re-throw other errors
+      rethrow;
+    }
+  }
 
   // Initialize SharedPreferences
   final prefs = await SharedPreferences.getInstance();

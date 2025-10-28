@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/utils/responsive_utils.dart';
+import '../../../../features/auth/controller/auth_controller.dart';
 import '../../controller/lesson_controller.dart';
 import '../../data/models/lesson.dart';
 import '../../../quiz/services/quiz_tracking_service.dart';
@@ -128,6 +129,10 @@ class LessonDetailPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Welcome banner with personalized greeting
+        _buildWelcomeBanner(lesson),
+        const SizedBox(height: 16),
+
         // Study timer with persistent tracking
         StudyTimerWidget(
           lessonId: lesson.id,
@@ -323,5 +328,73 @@ class LessonDetailPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Welcome banner with personalized greeting for the lesson
+  Widget _buildWelcomeBanner(Lesson lesson) {
+    final authController = Get.find<AuthController>();
+    final user = authController.currentUser.value;
+    final isGuest = authController.isGuest;
+
+    String greeting = 'Ready to Learn?';
+    if (user != null && !isGuest) {
+      final name = user.displayName ?? user.email.split('@')[0];
+      greeting = 'Welcome, $name!';
+    } else if (isGuest) {
+      greeting = 'Welcome, Guest!';
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.lightPrimary.withOpacity(0.7),
+            AppColors.info.withOpacity(0.7),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.school,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  greeting,
+                  style: AppTextStyles.h4.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Continue your learning journey',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn().slideY(begin: -0.2);
   }
 }

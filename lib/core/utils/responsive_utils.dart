@@ -11,6 +11,7 @@
 ///   return DesktopLayout();
 /// }
 /// ```
+library;
 
 import 'package:flutter/material.dart';
 

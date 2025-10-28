@@ -138,7 +138,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.info_outline,
                       color: AppColors.info,
                     ),
@@ -199,9 +199,9 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  side: BorderSide(color: AppColors.lightPrimary),
+                  side: const BorderSide(color: AppColors.lightPrimary),
                 ),
-                child: Text(
+                child: const Text(
                   'I\'ve Verified - Check Now',
                   style: TextStyle(
                     fontSize: 16,

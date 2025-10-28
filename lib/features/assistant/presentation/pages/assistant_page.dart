@@ -7,6 +7,7 @@ import 'package:flutter_mate/core/constants/app_text_styles.dart';
 import 'package:flutter_mate/core/utils/responsive_utils.dart';
 import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
 import 'package:flutter_mate/shared/widgets/app_bar_widget.dart';
+import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
 import '../../controller/assistant_controller.dart';
 
 /// AI Assistant page for guidance and tips
@@ -641,6 +642,17 @@ class AssistantPage extends GetView<AssistantController> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    final authController = Get.find<AuthController>();
+    final user = authController.currentUser.value;
+    final isGuest = authController.isGuest;
+
+    String greeting = 'Hello';
+    if (user != null && !isGuest) {
+      greeting = 'Hello, ${user.displayName ?? user.email.split('@')[0]}!';
+    } else if (isGuest) {
+      greeting = 'Hello, Guest!';
+    }
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -652,8 +664,15 @@ class AssistantPage extends GetView<AssistantController> {
           ).animate().fadeIn().scale(),
           const SizedBox(height: 16),
           Text(
-            'No messages yet',
+            greeting,
             style: AppTextStyles.h3.copyWith(
+              color: Theme.of(context).textTheme.bodyLarge?.color,
+            ),
+          ).animate().fadeIn(delay: 100.ms),
+          const SizedBox(height: 8),
+          Text(
+            'No messages yet',
+            style: AppTextStyles.bodyLarge.copyWith(
               color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ).animate().fadeIn(delay: 200.ms),
