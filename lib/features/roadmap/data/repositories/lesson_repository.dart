@@ -1,5 +1,6 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../models/lesson.dart';
+import '../services/progress_sync_service.dart';
 
 abstract class LessonRepository {
   /// Get all lessons for a specific stage
@@ -25,14 +26,21 @@ abstract class LessonRepository {
 
   /// Set advanced mode status
   Future<void> setAdvancedMode(bool enabled);
+
+  /// Sync progress with cloud
+  Future<void> syncProgress();
 }
 
 class LessonRepositoryImpl implements LessonRepository {
+  static const String _boxName = 'progress';
   static const _completedLessonsKey = 'completed_lessons';
   static const _advancedModeKey = 'advanced_mode';
-  final SharedPreferences _prefs;
+  final ProgressSyncService _syncService;
 
-  LessonRepositoryImpl(this._prefs);
+  LessonRepositoryImpl(this._syncService);
+
+  /// Get Hive box
+  Box get _box => Hive.box(_boxName);
 
   // Mock lesson data - in a real app, this would come from an API
   final List<Lesson> _allLessons = const [
@@ -378,11 +386,7 @@ class LessonRepositoryImpl implements LessonRepository {
 
   @override
   Future<void> markLessonCompleted(String lessonId) async {
-    final completedLessons = await _getCompletedLessons();
-    if (!completedLessons.contains(lessonId)) {
-      completedLessons.add(lessonId);
-      await _prefs.setStringList(_completedLessonsKey, completedLessons);
-    }
+    await _syncService.markLessonCompleted(lessonId);
   }
 
   @override
@@ -415,15 +419,21 @@ class LessonRepositoryImpl implements LessonRepository {
 
   @override
   Future<bool> getAdvancedMode() async {
-    return _prefs.getBool(_advancedModeKey) ?? false;
+    return _box.get(_advancedModeKey, defaultValue: false) as bool;
   }
 
   @override
   Future<void> setAdvancedMode(bool enabled) async {
-    await _prefs.setBool(_advancedModeKey, enabled);
+    await _syncService.setAdvancedMode(enabled);
+  }
+
+  @override
+  Future<void> syncProgress() async {
+    await _syncService.autoSync();
   }
 
   Future<List<String>> _getCompletedLessons() async {
-    return _prefs.getStringList(_completedLessonsKey) ?? [];
+    return List<String>.from(
+        _box.get(_completedLessonsKey, defaultValue: <String>[]));
   }
 }

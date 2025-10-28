@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../data/models/lesson.dart';
 import './lesson_controller.dart';
 
@@ -14,12 +14,14 @@ import './lesson_controller.dart';
 /// - Calculate elapsed time based on start timestamp
 /// - Auto-complete lesson and navigate to next when timer finishes
 class StudyTimerController extends GetxController {
-  static const String _prefixKey = 'study_timer_';
+  static const String _boxName = 'study_timer';
+  static const String _prefixKey = 'timer_';
   static const String _startTimeSuffix = '_start';
   static const String _elapsedSuffix = '_elapsed';
   static const String _isRunningSuffix = '_running';
 
-  SharedPreferences? _prefs;
+  /// Get Hive box
+  Box get _box => Hive.box(_boxName);
 
   // Current lesson being studied
   final RxString currentLessonId = ''.obs;
@@ -35,17 +37,11 @@ class StudyTimerController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _initPrefs();
-  }
-
-  Future<void> _initPrefs() async {
-    _prefs = await SharedPreferences.getInstance();
+    // Hive box should already be initialized in main.dart
   }
 
   /// Start timer for a specific lesson
   Future<void> startTimer(String lessonId, {int? durationMinutes}) async {
-    await _ensurePrefs();
-
     currentLessonId.value = lessonId;
 
     // Set target duration if provided
@@ -55,17 +51,17 @@ class StudyTimerController extends GetxController {
 
     // Load existing elapsed time
     final savedElapsed =
-        _prefs!.getInt('$_prefixKey$lessonId$_elapsedSuffix') ?? 0;
+        _box.get('$_prefixKey$lessonId$_elapsedSuffix', defaultValue: 0) as int;
     elapsedSeconds.value = savedElapsed;
 
     // Check if timer was already running
-    final wasRunning =
-        _prefs!.getBool('$_prefixKey$lessonId$_isRunningSuffix') ?? false;
+    final wasRunning = _box.get('$_prefixKey$lessonId$_isRunningSuffix',
+        defaultValue: false) as bool;
 
     if (wasRunning) {
       // Calculate additional elapsed time since app was closed
       final savedStartTime =
-          _prefs!.getInt('$_prefixKey$lessonId$_startTimeSuffix');
+          _box.get('$_prefixKey$lessonId$_startTimeSuffix') as int?;
       if (savedStartTime != null) {
         final startDateTime =
             DateTime.fromMillisecondsSinceEpoch(savedStartTime);
@@ -86,8 +82,6 @@ class StudyTimerController extends GetxController {
   /// Toggle timer play/pause
   Future<void> toggleTimer() async {
     if (currentLessonId.value.isEmpty) return;
-
-    await _ensurePrefs();
 
     if (isRunning.value) {
       // Pause: save current elapsed time
@@ -123,8 +117,6 @@ class StudyTimerController extends GetxController {
   Future<void> resetTimer() async {
     if (currentLessonId.value.isEmpty) return;
 
-    await _ensurePrefs();
-
     elapsedSeconds.value = 0;
     _startTime = DateTime.now();
     isRunning.value = true;
@@ -142,10 +134,10 @@ class StudyTimerController extends GetxController {
         final sessionSeconds = now.difference(_startTime!).inSeconds;
 
         // Update displayed time but don't save yet (save happens on pause/background)
-        final baseElapsed = _prefs?.getInt(
-              '$_prefixKey${currentLessonId.value}$_elapsedSuffix',
-            ) ??
-            0;
+        final baseElapsed = _box.get(
+          '$_prefixKey${currentLessonId.value}$_elapsedSuffix',
+          defaultValue: 0,
+        ) as int;
         elapsedSeconds.value = baseElapsed + sessionSeconds;
 
         // Check if target duration reached
@@ -299,36 +291,34 @@ class StudyTimerController extends GetxController {
 
   /// Save timer state to persistent storage
   Future<void> _saveTimerState(String lessonId) async {
-    await _ensurePrefs();
-
     if (isRunning.value && _startTime != null) {
       // Save start time for calculating elapsed time when app reopens
-      await _prefs!.setInt(
+      await _box.put(
         '$_prefixKey$lessonId$_startTimeSuffix',
         _startTime!.millisecondsSinceEpoch,
       );
-      await _prefs!.setBool('$_prefixKey$lessonId$_isRunningSuffix', true);
+      await _box.put('$_prefixKey$lessonId$_isRunningSuffix', true);
 
       // Save base elapsed time (before current session)
       final now = DateTime.now();
       final sessionSeconds = now.difference(_startTime!).inSeconds;
       final baseElapsed = elapsedSeconds.value - sessionSeconds;
-      await _prefs!.setInt('$_prefixKey$lessonId$_elapsedSuffix', baseElapsed);
+      await _box.put('$_prefixKey$lessonId$_elapsedSuffix', baseElapsed);
     } else {
       // Timer is paused, save total elapsed time
-      await _prefs!.setInt(
+      await _box.put(
         '$_prefixKey$lessonId$_elapsedSuffix',
         elapsedSeconds.value,
       );
-      await _prefs!.setBool('$_prefixKey$lessonId$_isRunningSuffix', false);
-      await _prefs!.remove('$_prefixKey$lessonId$_startTimeSuffix');
+      await _box.put('$_prefixKey$lessonId$_isRunningSuffix', false);
+      await _box.delete('$_prefixKey$lessonId$_startTimeSuffix');
     }
   }
 
   /// Get total study time for a lesson (in seconds)
   Future<int> getTotalStudyTime(String lessonId) async {
-    await _ensurePrefs();
-    return _prefs!.getInt('$_prefixKey$lessonId$_elapsedSuffix') ?? 0;
+    return _box.get('$_prefixKey$lessonId$_elapsedSuffix', defaultValue: 0)
+        as int;
   }
 
   /// Format seconds to readable time string
@@ -343,10 +333,6 @@ class StudyTimerController extends GetxController {
       return '${minutes}m ${secs}s';
     }
     return '${secs}s';
-  }
-
-  Future<void> _ensurePrefs() async {
-    _prefs ??= await SharedPreferences.getInstance();
   }
 
   @override

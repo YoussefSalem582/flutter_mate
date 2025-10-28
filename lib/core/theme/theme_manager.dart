@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive/hive.dart';
 
 /// Theme manager to handle theme switching and persistence
 class ThemeManager extends GetxController {
@@ -12,24 +12,27 @@ class ThemeManager extends GetxController {
 
   bool get isDarkMode => _themeMode.value == ThemeMode.dark;
 
+  // Hive box getter for settings
+  Box get _settingsBox =>
+      Hive.box('progress'); // Reuse progress box for settings
+
   @override
   void onInit() {
     super.onInit();
     _loadThemeMode();
   }
 
-  /// Load saved theme mode from SharedPreferences
+  /// Load saved theme mode from Hive
   Future<void> _loadThemeMode() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedThemeIndex = prefs.getInt(_themeKey) ?? ThemeMode.system.index;
+    final savedThemeIndex = _settingsBox.get(_themeKey,
+        defaultValue: ThemeMode.system.index) as int;
     _themeMode.value = ThemeMode.values[savedThemeIndex];
     Get.changeThemeMode(_themeMode.value);
   }
 
-  /// Save theme mode to SharedPreferences
+  /// Save theme mode to Hive
   Future<void> _saveThemeMode(ThemeMode mode) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_themeKey, mode.index);
+    await _settingsBox.put(_themeKey, mode.index);
   }
 
   /// Toggle between light and dark theme

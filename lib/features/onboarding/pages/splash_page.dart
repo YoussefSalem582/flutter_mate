@@ -1,9 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_mate/core/routes/app_routes.dart';
 import 'package:flutter_mate/core/utils/responsive_utils.dart';
 import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
+import 'package:hive/hive.dart';
 
 /// Splash screen shown on app launch.
 class SplashPage extends StatefulWidget {
@@ -63,8 +63,9 @@ class _SplashPageState extends State<SplashPage>
       await Future.delayed(const Duration(milliseconds: 500));
 
       // Check if user has seen onboarding
-      final prefs = Get.find<SharedPreferences>();
-      final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+      final progressBox = Hive.box('progress');
+      final hasSeenOnboarding =
+          progressBox.get('hasSeenOnboarding', defaultValue: false) as bool;
 
       if (authController.isAuthenticated.value) {
         // User is logged in - go straight to roadmap (home)
@@ -78,8 +79,9 @@ class _SplashPageState extends State<SplashPage>
       }
     } catch (e) {
       // If auth controller is not initialized, show onboarding
-      final prefs = Get.find<SharedPreferences>();
-      final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+      final progressBox = Hive.box('progress');
+      final hasSeenOnboarding =
+          progressBox.get('hasSeenOnboarding', defaultValue: false) as bool;
 
       if (!hasSeenOnboarding) {
         Get.offAllNamed(AppRoutes.onboarding);

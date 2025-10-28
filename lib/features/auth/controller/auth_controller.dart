@@ -24,12 +24,31 @@ class AuthController extends GetxController {
       if (firebaseUser != null) {
         await _loadUserProfile(firebaseUser.uid);
         isEmailVerified.value = firebaseUser.emailVerified;
+
+        // Sync progress when user logs in
+        await _syncUserProgress();
       } else {
         currentUser.value = null;
         isAuthenticated.value = false;
         isEmailVerified.value = false;
       }
     });
+  }
+
+  /// Sync user progress after login
+  Future<void> _syncUserProgress() async {
+    try {
+      // Import ProgressSyncService dynamically to avoid circular dependency
+      if (Get.isRegistered<dynamic>()) {
+        final syncService = Get.find<dynamic>();
+        if (syncService.runtimeType.toString() == 'ProgressSyncService') {
+          await syncService.migrateGuestProgress();
+          await syncService.autoSync();
+        }
+      }
+    } catch (e) {
+      print('❌ Error syncing user progress: $e');
+    }
   }
 
   /// Load user profile from Firestore
@@ -162,6 +181,18 @@ class AuthController extends GetxController {
 
   /// Sign out
   Future<void> signOut() async {
+    // Clear local progress data
+    try {
+      if (Get.isRegistered<dynamic>()) {
+        final syncService = Get.find<dynamic>();
+        if (syncService.runtimeType.toString() == 'ProgressSyncService') {
+          await syncService.clearLocalData();
+        }
+      }
+    } catch (e) {
+      print('❌ Error clearing local data: $e');
+    }
+
     await _authService.signOut();
     Get.offAllNamed('/login');
   }

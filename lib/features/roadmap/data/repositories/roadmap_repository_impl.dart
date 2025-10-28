@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mate/features/roadmap/data/models/roadmap_stage.dart';
 import 'package:flutter_mate/features/roadmap/data/repositories/roadmap_repository.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-/// Local implementation persisting progress via [SharedPreferences].
+/// Local implementation persisting progress via Hive.
 class RoadmapRepositoryImpl implements RoadmapRepository {
-  RoadmapRepositoryImpl({SharedPreferences? preferences})
-      : _preferences = preferences;
+  static const String _boxName = 'roadmap';
+  static const String _progressPrefix = 'progress_';
 
-  static const String _progressPrefix = 'roadmap_progress_';
-
-  SharedPreferences? _preferences;
+  /// Get Hive box
+  Box get _box => Hive.box(_boxName);
 
   @override
   Future<List<RoadmapStage>> fetchStages() async {
@@ -45,16 +44,14 @@ class RoadmapRepositoryImpl implements RoadmapRepository {
 
   @override
   Future<double> getStageProgress(String stageId) async {
-    final prefs = await _ensurePrefs();
-    return prefs.getDouble('$_progressPrefix$stageId') ??
-        _defaultProgress(stageId);
+    return _box.get('$_progressPrefix$stageId',
+        defaultValue: _defaultProgress(stageId)) as double;
   }
 
   @override
   Future<void> updateStageProgress(String stageId, double progress) async {
     final clampedProgress = progress.clamp(0.0, 1.0);
-    final prefs = await _ensurePrefs();
-    await prefs.setDouble('$_progressPrefix$stageId', clampedProgress);
+    await _box.put('$_progressPrefix$stageId', clampedProgress);
   }
 
   @override
@@ -65,11 +62,6 @@ class RoadmapRepositoryImpl implements RoadmapRepository {
     );
     if (progressValues.isEmpty) return 0.0;
     return progressValues.reduce((a, b) => a + b) / progressValues.length;
-  }
-
-  Future<SharedPreferences> _ensurePrefs() async {
-    _preferences ??= await SharedPreferences.getInstance();
-    return _preferences!;
   }
 
   double _defaultProgress(String stageId) {

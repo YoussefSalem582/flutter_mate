@@ -1,6 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive/hive.dart';
 import 'package:flutter_mate/core/routes/app_routes.dart';
 import 'package:flutter_mate/core/utils/responsive_utils.dart';
 import '../data/onboarding_data.dart';
@@ -56,8 +56,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   void _completeOnboarding() {
     // Mark onboarding as completed
-    final prefs = Get.find<SharedPreferences>();
-    prefs.setBool('hasSeenOnboarding', true);
+    final progressBox = Hive.box('progress');
+    progressBox.put('hasSeenOnboarding', true);
 
     // Navigate to login page
     Get.offAllNamed(AppRoutes.login);

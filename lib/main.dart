@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_mate/core/theme/app_theme.dart';
 import 'package:flutter_mate/core/theme/theme_manager.dart';
 import 'package:flutter_mate/core/routes/app_pages.dart';
@@ -31,9 +31,14 @@ void main() async {
     }
   }
 
-  // Initialize SharedPreferences
-  final prefs = await SharedPreferences.getInstance();
-  Get.put(prefs);
+  // Initialize Hive
+  await Hive.initFlutter();
+
+  // Open all Hive boxes
+  await Hive.openBox('progress'); // For lesson progress and sync
+  await Hive.openBox('roadmap'); // For roadmap stage progress
+  await Hive.openBox('quiz'); // For quiz tracking and results
+  await Hive.openBox('study_timer'); // For study timer persistence
 
   // Initialize GetX dependencies
   Get.put(ThemeManager());
@@ -44,8 +49,8 @@ void main() async {
   // Initialize Quiz Tracking Service
   await Get.putAsync(() => QuizTrackingService().init());
 
-  // Initialize Achievement System
-  final achievementRepo = AchievementRepositoryImpl(prefs);
+  // Initialize Achievement System (now uses Hive)
+  final achievementRepo = AchievementRepositoryImpl();
   Get.put<AchievementRepository>(achievementRepo);
   Get.put(AchievementController(achievementRepo));
 

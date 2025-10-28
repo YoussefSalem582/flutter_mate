@@ -1,10 +1,13 @@
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../achievements/controller/achievement_controller.dart';
 
 /// Service for tracking quiz completion and scores
 class QuizTrackingService extends GetxService {
-  late SharedPreferences _prefs;
+  static const String _boxName = 'quiz';
+
+  /// Get Hive box
+  Box get _box => Hive.box(_boxName);
 
   final RxMap<String, QuizResult> quizResults = <String, QuizResult>{}.obs;
   final RxInt totalQuizzesCompleted = 0.obs;
@@ -12,32 +15,30 @@ class QuizTrackingService extends GetxService {
   final RxDouble averageScore = 0.0.obs;
 
   Future<QuizTrackingService> init() async {
-    _prefs = await SharedPreferences.getInstance();
     await _loadQuizResults();
     return this;
   }
 
   Future<void> _loadQuizResults() async {
-    final keys = _prefs.getKeys().where((key) => key.startsWith('quiz_'));
+    final allKeys =
+        _box.keys.where((key) => key.toString().startsWith('quiz_'));
 
-    for (final key in keys) {
-      final lessonId = key.replaceFirst('quiz_', '');
-      final score = _prefs.getInt('${key}_score') ?? 0;
-      final maxScore = _prefs.getInt('${key}_max') ?? 0;
-      final xpEarned = _prefs.getInt('${key}_xp') ?? 0;
-      final timestamp = _prefs.getInt('${key}_time') ?? 0;
-      final correctAnswers = _prefs.getInt('${key}_correct') ?? 0;
-      final totalQuestions = _prefs.getInt('${key}_total') ?? 0;
+    for (final key in allKeys) {
+      final lessonId = key.toString().replaceFirst('quiz_', '');
+      final data = _box.get(key) as Map?;
 
-      quizResults[lessonId] = QuizResult(
-        lessonId: lessonId,
-        score: score,
-        maxScore: maxScore,
-        xpEarned: xpEarned,
-        timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
-        correctAnswers: correctAnswers,
-        totalQuestions: totalQuestions,
-      );
+      if (data != null) {
+        quizResults[lessonId] = QuizResult(
+          lessonId: lessonId,
+          score: data['score'] as int? ?? 0,
+          maxScore: data['maxScore'] as int? ?? 0,
+          xpEarned: data['xpEarned'] as int? ?? 0,
+          timestamp: DateTime.fromMillisecondsSinceEpoch(
+              data['timestamp'] as int? ?? 0),
+          correctAnswers: data['correctAnswers'] as int? ?? 0,
+          totalQuestions: data['totalQuestions'] as int? ?? 0,
+        );
+      }
     }
 
     _updateStats();
@@ -53,12 +54,15 @@ class QuizTrackingService extends GetxService {
   }) async {
     final now = DateTime.now();
 
-    await _prefs.setInt('quiz_${lessonId}_score', score);
-    await _prefs.setInt('quiz_${lessonId}_max', maxScore);
-    await _prefs.setInt('quiz_${lessonId}_xp', xpEarned);
-    await _prefs.setInt('quiz_${lessonId}_time', now.millisecondsSinceEpoch);
-    await _prefs.setInt('quiz_${lessonId}_correct', correctAnswers);
-    await _prefs.setInt('quiz_${lessonId}_total', totalQuestions);
+    // Save quiz result as a map
+    await _box.put('quiz_$lessonId', {
+      'score': score,
+      'maxScore': maxScore,
+      'xpEarned': xpEarned,
+      'timestamp': now.millisecondsSinceEpoch,
+      'correctAnswers': correctAnswers,
+      'totalQuestions': totalQuestions,
+    });
 
     quizResults[lessonId] = QuizResult(
       lessonId: lessonId,
@@ -119,9 +123,10 @@ class QuizTrackingService extends GetxService {
   }
 
   Future<void> clearAllQuizResults() async {
-    final keys = _prefs.getKeys().where((key) => key.startsWith('quiz_'));
+    final keys =
+        _box.keys.where((key) => key.toString().startsWith('quiz_')).toList();
     for (final key in keys) {
-      await _prefs.remove(key);
+      await _box.delete(key);
     }
     quizResults.clear();
     _updateStats();

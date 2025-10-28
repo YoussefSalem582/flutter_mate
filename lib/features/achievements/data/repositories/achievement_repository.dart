@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive/hive.dart';
 import '../models/achievement.dart';
 
 abstract class AchievementRepository {
@@ -11,9 +11,11 @@ abstract class AchievementRepository {
 
 class AchievementRepositoryImpl implements AchievementRepository {
   static const _progressKey = 'achievement_progress';
-  final SharedPreferences _prefs;
 
-  AchievementRepositoryImpl(this._prefs);
+  // Hive box getter for achievements (reuse progress box)
+  Box get _box => Hive.box('progress');
+
+  AchievementRepositoryImpl();
 
   final List<Achievement> _achievements = const [
     // Lesson Achievements
@@ -131,7 +133,7 @@ class AchievementRepositoryImpl implements AchievementRepository {
 
   @override
   Future<Map<String, AchievementProgress>> getUserProgress() async {
-    final json = _prefs.getString(_progressKey);
+    final json = _box.get(_progressKey) as String?;
     if (json == null) {
       // Initialize with zero progress for all achievements
       return {
@@ -161,9 +163,8 @@ class AchievementRepositoryImpl implements AchievementRepository {
     final updated = currentProgress[achievementId]?.copyWith(
       currentProgress: progress,
       isUnlocked: progress >= achievement.requiredProgress,
-      unlockedAt: progress >= achievement.requiredProgress
-          ? DateTime.now()
-          : null,
+      unlockedAt:
+          progress >= achievement.requiredProgress ? DateTime.now() : null,
     );
 
     if (updated != null) {
@@ -191,6 +192,6 @@ class AchievementRepositoryImpl implements AchievementRepository {
     final json = jsonEncode(
       progress.map((key, value) => MapEntry(key, value.toJson())),
     );
-    await _prefs.setString(_progressKey, json);
+    await _box.put(_progressKey, json);
   }
 }

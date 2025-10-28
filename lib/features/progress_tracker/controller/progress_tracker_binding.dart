@@ -4,7 +4,7 @@ import 'package:flutter_mate/features/roadmap/controller/lesson_controller.dart'
 import 'package:flutter_mate/features/roadmap/data/repositories/roadmap_repository.dart';
 import 'package:flutter_mate/features/roadmap/data/repositories/roadmap_repository_impl.dart';
 import 'package:flutter_mate/features/roadmap/data/repositories/lesson_repository.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_mate/features/roadmap/data/services/progress_sync_service.dart';
 import 'package:get/get.dart';
 
 /// Provides dependencies for the progress tracker feature.
@@ -21,9 +21,13 @@ class ProgressTrackerBinding extends Bindings {
       );
     }
 
+    if (!Get.isRegistered<ProgressSyncService>()) {
+      Get.lazyPut<ProgressSyncService>(() => ProgressSyncService());
+    }
+
     if (!Get.isRegistered<LessonRepository>()) {
       Get.lazyPut<LessonRepository>(
-        () => LessonRepositoryImpl(Get.find<SharedPreferences>()),
+        () => LessonRepositoryImpl(Get.find<ProgressSyncService>()),
       );
     }
 

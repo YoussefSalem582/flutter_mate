@@ -31,6 +31,16 @@ class LessonController extends GetxController {
     super.onInit();
     _loadCompletionStatus();
     _loadAdvancedMode();
+    _syncProgress();
+  }
+
+  Future<void> _syncProgress() async {
+    try {
+      await _repository.syncProgress();
+      print('✅ Progress synced on lesson controller init');
+    } catch (e) {
+      print('❌ Error syncing progress: $e');
+    }
   }
 
   Future<void> _loadAdvancedMode() async {
