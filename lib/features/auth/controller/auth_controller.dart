@@ -335,4 +335,223 @@ class AuthController extends GetxController {
   bool get isPremium =>
       currentUser.value?.tier == SubscriptionTier.premium ||
       currentUser.value?.tier == SubscriptionTier.pro;
+
+  /// Send verification to current email before changing email
+  Future<bool> sendEmailChangeVerification() async {
+    isLoading.value = true;
+
+    final result = await _authService.sendEmailChangeVerification();
+
+    isLoading.value = false;
+
+    if (result.isSuccess) {
+      Get.snackbar(
+        'Verification Sent',
+        'Please check your current email and verify before proceeding.',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 4),
+      );
+      return true;
+    } else {
+      Get.snackbar(
+        'Error',
+        result.message,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return false;
+    }
+  }
+
+  /// Check if current email is verified
+  Future<bool> checkCurrentEmailVerified() async {
+    try {
+      await _authService.currentFirebaseUser?.reload();
+      return _authService.currentFirebaseUser?.emailVerified ?? false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Update user email (after current email is verified)
+  Future<void> updateEmail(String newEmail) async {
+    if (newEmail.trim().isEmpty) {
+      Get.snackbar('Error', 'Please enter a new email');
+      return;
+    }
+
+    if (!GetUtils.isEmail(newEmail.trim())) {
+      Get.snackbar('Error', 'Please enter a valid email');
+      return;
+    }
+
+    isLoading.value = true;
+
+    final result = await _authService.updateEmail(newEmail.trim());
+
+    isLoading.value = false;
+
+    if (result.isSuccess) {
+      Get.snackbar(
+        'Success',
+        'Verification email sent! Please check your new email address and verify to complete the change.',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 5),
+      );
+    } else {
+      Get.snackbar(
+        'Error',
+        result.message,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  /// Update user password with old password verification
+  Future<void> updatePassword(String oldPassword, String newPassword) async {
+    if (oldPassword.isEmpty) {
+      Get.snackbar('Error', 'Please enter your current password');
+      return;
+    }
+
+    if (newPassword.isEmpty) {
+      Get.snackbar('Error', 'Please enter a new password');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      Get.snackbar('Error', 'New password must be at least 6 characters');
+      return;
+    }
+
+    if (oldPassword == newPassword) {
+      Get.snackbar(
+          'Error', 'New password must be different from current password');
+      return;
+    }
+
+    isLoading.value = true;
+
+    final result = await _authService.updatePassword(oldPassword, newPassword);
+
+    isLoading.value = false;
+
+    if (result.isSuccess) {
+      Get.snackbar(
+        'Success',
+        'Password updated successfully!',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } else {
+      Get.snackbar(
+        'Error',
+        result.message,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  /// Add phone number to account
+  final RxString verificationId = ''.obs;
+  final RxBool isVerifyingPhone = false.obs;
+
+  Future<void> verifyPhoneNumber(String phoneNumber) async {
+    if (phoneNumber.trim().isEmpty) {
+      Get.snackbar('Error', 'Please enter a phone number');
+      return;
+    }
+
+    isVerifyingPhone.value = true;
+
+    final error = await _authService.verifyPhoneNumber(
+      phoneNumber.trim(),
+      onCodeSent: (verId) {
+        verificationId.value = verId;
+        isVerifyingPhone.value = false;
+        Get.snackbar(
+          'Success',
+          'Verification code sent to $phoneNumber',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      },
+      onError: (error) {
+        isVerifyingPhone.value = false;
+        Get.snackbar(
+          'Error',
+          error,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      },
+    );
+
+    if (error != null) {
+      isVerifyingPhone.value = false;
+      Get.snackbar('Error', error, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  Future<void> addPhoneNumber(String phoneNumber, String smsCode) async {
+    if (verificationId.value.isEmpty) {
+      Get.snackbar('Error', 'Please request verification code first');
+      return;
+    }
+
+    if (smsCode.trim().isEmpty) {
+      Get.snackbar('Error', 'Please enter the verification code');
+      return;
+    }
+
+    isLoading.value = true;
+
+    final result = await _authService.addPhoneNumber(
+      phoneNumber.trim(),
+      verificationId.value,
+      smsCode.trim(),
+    );
+
+    isLoading.value = false;
+
+    if (result.isSuccess) {
+      verificationId.value = '';
+      Get.snackbar(
+        'Success',
+        'Phone number added successfully!',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      // Reload user profile
+      if (currentUser.value != null) {
+        await _loadUserProfile(currentUser.value!.id);
+      }
+    } else {
+      Get.snackbar(
+        'Error',
+        result.message,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  /// Delete user account
+  Future<void> deleteAccount() async {
+    isLoading.value = true;
+
+    final result = await _authService.deleteAccount();
+
+    isLoading.value = false;
+
+    if (result.isSuccess) {
+      Get.snackbar(
+        'Success',
+        'Account deleted successfully',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      // Navigate to login page after account deletion
+      Get.offAllNamed('/login');
+    } else {
+      Get.snackbar(
+        'Error',
+        result.message,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
 }

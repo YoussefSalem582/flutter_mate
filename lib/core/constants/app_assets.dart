@@ -13,6 +13,8 @@ class AppAssets {
 
   // Images
   static const String logoPath = 'assets/images/logo.png';
+  static const String appLogo = 'assets/images/app_logo.png';
+  static const String fullAppLogo = 'assets/images/full_app_logo.png';
   static const String placeholderPath = 'assets/images/placeholder.png';
 
   // Icons

@@ -5,6 +5,7 @@ class AppUser {
   final String username;
   final String? displayName;
   final String? photoURL;
+  final String? phoneNumber;
   final bool emailVerified;
   final DateTime createdAt;
   final DateTime lastLoginAt;
@@ -31,6 +32,7 @@ class AppUser {
     required this.username,
     this.displayName,
     this.photoURL,
+    this.phoneNumber,
     this.emailVerified = false,
     required this.createdAt,
     required this.lastLoginAt,
@@ -60,6 +62,7 @@ class AppUser {
       username: userData['username'] ?? 'User',
       displayName: userData['displayName'],
       photoURL: userData['photoURL'],
+      phoneNumber: userData['phoneNumber'],
       emailVerified: userData['emailVerified'] ?? false,
       createdAt: DateTime.parse(userData['createdAt']),
       lastLoginAt: DateTime.now(),
@@ -93,6 +96,7 @@ class AppUser {
       'username': username,
       'displayName': displayName,
       'photoURL': photoURL,
+      'phoneNumber': phoneNumber,
       'emailVerified': emailVerified,
       'createdAt': createdAt.toIso8601String(),
       'lastLoginAt': lastLoginAt.toIso8601String(),
@@ -115,6 +119,7 @@ class AppUser {
   AppUser copyWith({
     String? displayName,
     String? photoURL,
+    String? phoneNumber,
     bool? emailVerified,
     DateTime? lastLoginAt,
     UserPreferences? preferences,
@@ -134,6 +139,7 @@ class AppUser {
       username: username,
       displayName: displayName ?? this.displayName,
       photoURL: photoURL ?? this.photoURL,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
       emailVerified: emailVerified ?? this.emailVerified,
       createdAt: createdAt,
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,

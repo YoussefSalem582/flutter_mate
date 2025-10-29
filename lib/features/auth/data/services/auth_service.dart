@@ -310,6 +310,231 @@ class AuthService {
     }, SetOptions(merge: true));
   }
 
+  /// Verify current password by re-authenticating
+  Future<AuthResult> verifyCurrentPassword(String currentPassword) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        return AuthResult.failure('No user logged in');
+      }
+
+      final email = user.email;
+      if (email == null) {
+        return AuthResult.failure('No email associated with this account');
+      }
+
+      // Re-authenticate with current password
+      final credential = EmailAuthProvider.credential(
+        email: email,
+        password: currentPassword,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+      return AuthResult.success(user);
+    } on FirebaseAuthException catch (e) {
+      return AuthResult.failure(_getAuthErrorMessage(e.code, e.message));
+    } catch (e) {
+      return AuthResult.failure('Password verification failed: $e');
+    }
+  }
+
+  /// Send verification code to current email before allowing email change
+  Future<AuthResult> sendEmailChangeVerification() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        return AuthResult.failure('No user logged in');
+      }
+
+      if (user.email == null) {
+        return AuthResult.failure('No email associated with this account');
+      }
+
+      // Send verification email to current email
+      await user.sendEmailVerification();
+      return AuthResult.success(user);
+    } on FirebaseAuthException catch (e) {
+      return AuthResult.failure(_getAuthErrorMessage(e.code, e.message));
+    } catch (e) {
+      return AuthResult.failure('Failed to send verification: $e');
+    }
+  }
+
+  /// Update user email with verification code (after verifying current email)
+  Future<AuthResult> updateEmail(String newEmail) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        return AuthResult.failure('No user logged in');
+      }
+
+      // Check if current email is verified
+      await user.reload();
+      final reloadedUser = _auth.currentUser;
+
+      if (reloadedUser?.emailVerified == false) {
+        return AuthResult.failure('Please verify your current email first');
+      }
+
+      // Send verification to new email
+      await user.verifyBeforeUpdateEmail(newEmail);
+
+      return AuthResult.success(user);
+    } on FirebaseAuthException catch (e) {
+      return AuthResult.failure(_getAuthErrorMessage(e.code, e.message));
+    } catch (e) {
+      return AuthResult.failure('Failed to send verification: $e');
+    }
+  }
+
+  /// Complete email update after verification
+  Future<AuthResult> completeEmailUpdate() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        return AuthResult.failure('No user logged in');
+      }
+
+      // Reload user to get updated email
+      await user.reload();
+      final updatedUser = _auth.currentUser;
+
+      if (updatedUser?.email != null) {
+        // Update in Firestore
+        await _firestore.collection('users').doc(updatedUser!.uid).update({
+          'email': updatedUser.email,
+        });
+      }
+
+      return AuthResult.success(updatedUser);
+    } on FirebaseAuthException catch (e) {
+      return AuthResult.failure(_getAuthErrorMessage(e.code, e.message));
+    } catch (e) {
+      return AuthResult.failure('Failed to complete email update: $e');
+    }
+  }
+
+  /// Update user password with old password verification
+  Future<AuthResult> updatePassword(
+      String oldPassword, String newPassword) async {
+    try {
+      // First verify old password
+      final verifyResult = await verifyCurrentPassword(oldPassword);
+      if (!verifyResult.isSuccess) {
+        return verifyResult;
+      }
+
+      final user = _auth.currentUser;
+      if (user == null) {
+        return AuthResult.failure('No user logged in');
+      }
+
+      await user.updatePassword(newPassword);
+      return AuthResult.success(user);
+    } on FirebaseAuthException catch (e) {
+      return AuthResult.failure(_getAuthErrorMessage(e.code, e.message));
+    } catch (e) {
+      return AuthResult.failure('Failed to update password: $e');
+    }
+  }
+
+  /// Add phone number to account
+  Future<AuthResult> addPhoneNumber(
+      String phoneNumber, String verificationId, String smsCode) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        return AuthResult.failure('No user logged in');
+      }
+
+      // Create phone credential
+      final credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: smsCode,
+      );
+
+      // Link phone to account
+      await user.linkWithCredential(credential);
+
+      // Update Firestore
+      await _firestore.collection('users').doc(user.uid).update({
+        'phoneNumber': phoneNumber,
+      });
+
+      return AuthResult.success(user);
+    } on FirebaseAuthException catch (e) {
+      return AuthResult.failure(_getAuthErrorMessage(e.code, e.message));
+    } catch (e) {
+      return AuthResult.failure('Failed to add phone number: $e');
+    }
+  }
+
+  /// Verify phone number and send SMS code
+  Future<String?> verifyPhoneNumber(
+    String phoneNumber, {
+    required Function(String verificationId) onCodeSent,
+    required Function(String error) onError,
+  }) async {
+    try {
+      await _auth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          // Auto-verification (Android only)
+          final user = _auth.currentUser;
+          if (user != null) {
+            await user.linkWithCredential(credential);
+          }
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          onError(_getAuthErrorMessage(e.code, e.message));
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          onCodeSent(verificationId);
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          // Timeout
+        },
+        timeout: const Duration(seconds: 60),
+      );
+      return null;
+    } catch (e) {
+      return 'Failed to verify phone number: $e';
+    }
+  }
+
+  /// Delete user account
+  Future<AuthResult> deleteAccount() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        return AuthResult.failure('No user logged in');
+      }
+
+      // Delete user data from Firestore
+      await _firestore.collection('users').doc(user.uid).delete();
+
+      // Delete progress subcollection if exists
+      final progressDocs = await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('progress')
+          .get();
+
+      for (var doc in progressDocs.docs) {
+        await doc.reference.delete();
+      }
+
+      // Delete Firebase Auth account
+      await user.delete();
+
+      return AuthResult.success(null);
+    } on FirebaseAuthException catch (e) {
+      return AuthResult.failure(_getAuthErrorMessage(e.code, e.message));
+    } catch (e) {
+      return AuthResult.failure('Failed to delete account: $e');
+    }
+  }
+
   /// Get user-friendly error message
   String _getAuthErrorMessage(String code, [String? originalMessage]) {
     // For debugging on deployed site, include the error code
@@ -344,6 +569,8 @@ class AuthService {
         return 'This app is not authorized to use Firebase Authentication.$debugSuffix';
       case 'invalid-credential':
         return 'Invalid credentials provided.$debugSuffix';
+      case 'requires-recent-login':
+        return 'This operation requires recent authentication. Please sign in again.$debugSuffix';
       default:
         // Show the full error details for unknown errors
         if (originalMessage != null) {
