@@ -2,6 +2,7 @@
 import 'package:get/get.dart';
 import 'package:flutter_mate/core/routes/app_routes.dart';
 import 'package:flutter_mate/core/utils/responsive_utils.dart';
+import 'package:flutter_mate/core/constants/app_assets.dart';
 import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
 import 'package:hive/hive.dart';
 
@@ -119,37 +120,37 @@ class _SplashPageState extends State<SplashPage>
                           scale: _scaleAnimation.value,
                           child: Column(
                             children: [
-                              Container(
-                                width: isDesktop ? 160 : 120,
-                                height: isDesktop ? 160 : 120,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: primary.withOpacity(0.1),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: primary.withOpacity(0.2),
-                                      blurRadius: 20,
-                                      spreadRadius: 5,
+                              // Logo Image
+                              Image.asset(
+                                AppAssets.appLogo,
+                                width: isDesktop ? 320 : 260,
+                                height: isDesktop ? 320 : 260,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  // Fallback to icon if image not found
+                                  return Container(
+                                    width: isDesktop ? 160 : 120,
+                                    height: isDesktop ? 160 : 120,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: primary.withOpacity(0.1),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: primary.withOpacity(0.2),
+                                          blurRadius: 20,
+                                          spreadRadius: 5,
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                                child: Icon(
-                                  Icons.flutter_dash,
-                                  size: isDesktop ? 80 : 64,
-                                  color: primary,
-                                ),
+                                    child: Icon(
+                                      Icons.flutter_dash,
+                                      size: isDesktop ? 80 : 64,
+                                      color: primary,
+                                    ),
+                                  );
+                                },
                               ),
-                              SizedBox(height: isDesktop ? 48 : 40),
-                              Text(
-                                'FlutterMate',
-                                style: theme.textTheme.headlineLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: primary,
-                                  letterSpacing: 0.5,
-                                  fontSize: isDesktop ? 48 : null,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
+                              SizedBox(height: isDesktop ? 24 : 20),
                               Text(
                                 'Your Flutter learning companion',
                                 style: theme.textTheme.bodyLarge?.copyWith(

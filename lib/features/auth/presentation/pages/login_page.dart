@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../../controller/auth_controller.dart';
 import '../widgets/auth_text_field.dart';
@@ -55,25 +56,35 @@ class _LoginPageState extends State<LoginPage> {
                     Center(
                       child: Column(
                         children: [
-                          Container(
-                            height: isDesktop ? 120 : 100,
-                            width: isDesktop ? 120 : 100,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppColors.lightPrimary,
-                                  AppColors.lightPrimary.withOpacity(0.7),
-                                ],
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.school_rounded,
-                              size: isDesktop ? 60 : 50,
-                              color: Colors.white,
-                            ),
+                          // App Logo Image
+                          Image.asset(
+                            AppAssets.fullAppLogo,
+                            width: isDesktop ? 320 : 260,
+                            height: isDesktop ? 320 : 260,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              // Fallback to circular icon if image not found
+                              return Container(
+                                height: isDesktop ? 120 : 100,
+                                width: isDesktop ? 120 : 100,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      AppColors.lightPrimary,
+                                      AppColors.lightPrimary.withOpacity(0.7),
+                                    ],
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.school_rounded,
+                                  size: isDesktop ? 60 : 50,
+                                  color: Colors.white,
+                                ),
+                              );
+                            },
                           ).animate().scale(delay: 100.ms),
-                          const SizedBox(height: 16),
+                          //const SizedBox(height: 8),
                           Text(
                             'Welcome Back!',
                             style: AppTextStyles.h1.copyWith(

@@ -30,27 +30,27 @@ class SplashHeroSection extends StatelessWidget {
 
   Widget _buildAnimatedIcon() {
     return Container(
-          width: isWide ? 160 : 140,
-          height: isWide ? 160 : 140,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: [primary.withOpacity(0.18), primary.withOpacity(0.05)],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: primary.withOpacity(0.25),
-                blurRadius: 40,
-                spreadRadius: 6,
-              ),
-            ],
+      width: isWide ? 160 : 140,
+      height: isWide ? 160 : 140,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [primary.withOpacity(0.18), primary.withOpacity(0.05)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: primary.withOpacity(0.25),
+            blurRadius: 40,
+            spreadRadius: 6,
           ),
-          child: Icon(
-            Icons.flutter_dash,
-            size: isWide ? 96 : 88,
-            color: primary,
-          ),
-        )
+        ],
+      ),
+      child: Icon(
+        Icons.flutter_dash,
+        size: isWide ? 96 : 88,
+        color: primary,
+      ),
+    )
         .animate(onPlay: (controller) => controller.repeat(reverse: true))
         .scaleXY(
           begin: 0.96,
@@ -64,13 +64,13 @@ class SplashHeroSection extends StatelessWidget {
 
   Widget _buildHeadline() {
     return Text(
-          "Let's build something brilliant",
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: theme.colorScheme.onSurface.withOpacity(0.9),
-          ),
-          textAlign: TextAlign.center,
-        )
+      "Let's build something brilliant",
+      style: theme.textTheme.headlineMedium?.copyWith(
+        fontWeight: FontWeight.w700,
+        color: theme.colorScheme.onSurface.withOpacity(0.9),
+      ),
+      textAlign: TextAlign.center,
+    )
         .animate()
         .fadeIn(
           delay: const Duration(milliseconds: 200),
@@ -82,21 +82,20 @@ class SplashHeroSection extends StatelessWidget {
   Widget _buildSubtitle() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isWide ? 48 : 16),
-      child:
-          Text(
-                'Personalizing your learning path, syncing progress, and warming up the assistant.',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
-                  height: 1.4,
-                ),
-                textAlign: TextAlign.center,
-              )
-              .animate()
-              .fadeIn(
-                delay: const Duration(milliseconds: 350),
-                duration: const Duration(milliseconds: 520),
-              )
-              .slideY(begin: 0.2, end: 0, curve: Curves.easeOut),
+      child: Text(
+        'Personalizing your learning path, syncing progress, and warming up the assistant.',
+        style: theme.textTheme.bodyLarge?.copyWith(
+          color: theme.colorScheme.onSurface.withOpacity(0.7),
+          height: 1.4,
+        ),
+        textAlign: TextAlign.center,
+      )
+          .animate()
+          .fadeIn(
+            delay: const Duration(milliseconds: 350),
+            duration: const Duration(milliseconds: 520),
+          )
+          .slideY(begin: 0.2, end: 0, curve: Curves.easeOut),
     );
   }
 }

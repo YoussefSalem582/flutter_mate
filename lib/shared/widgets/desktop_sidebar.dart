@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_mate/core/constants/app_colors.dart';
 import 'package:flutter_mate/core/routes/app_routes.dart';
+import 'package:flutter_mate/shared/widgets/quick_access_cards.dart';
 
 /// Fixed/Sticky sidebar navigation for desktop screens.
 ///
@@ -47,6 +48,15 @@ class DesktopSidebar extends StatelessWidget {
 
             // Navigation menu
             _buildNavigationMenu(isDark),
+
+            const SizedBox(height: 32),
+
+            // Quick Access Cards
+            QuickAccessCards(
+              showTitle: true,
+              cardHeight: 100,
+              isDark: isDark,
+            ),
 
             const SizedBox(height: 32), // Bottom padding
           ],

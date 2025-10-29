@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_mate/core/constants/app_assets.dart';
 import '../../data/onboarding_item.dart';
 
 /// Main content card for each onboarding slide with icon, text, and features.
@@ -27,6 +28,21 @@ class OnboardingContentCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // App Logo at the top
+            Image.asset(
+              AppAssets.appLogo,
+              width: isWide ? 100 : 80,
+              height: isWide ? 100 : 80,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return const SizedBox.shrink();
+              },
+            )
+                .animate()
+                .fadeIn(duration: const Duration(milliseconds: 300))
+                .slideY(
+                    begin: -0.2, duration: const Duration(milliseconds: 400)),
+            const SizedBox(height: 24),
             _buildIllustration(theme),
             const SizedBox(height: 48),
             _buildTitle(theme, onSurface),
@@ -48,17 +64,14 @@ class OnboardingContentCard extends StatelessWidget {
 
   Widget _buildIllustration(ThemeData theme) {
     return Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: theme.colorScheme.primary.withOpacity(0.1),
-          ),
-          child: Icon(item.icon, size: 64, color: theme.colorScheme.primary),
-        )
-        .animate()
-        .fadeIn(duration: const Duration(milliseconds: 400))
-        .scale(
+      width: 120,
+      height: 120,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: theme.colorScheme.primary.withOpacity(0.1),
+      ),
+      child: Icon(item.icon, size: 64, color: theme.colorScheme.primary),
+    ).animate().fadeIn(duration: const Duration(milliseconds: 400)).scale(
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeOut,
         );

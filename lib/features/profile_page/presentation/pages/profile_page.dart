@@ -8,6 +8,7 @@ import 'package:flutter_mate/core/utils/auth_utils.dart';
 import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
 import 'package:flutter_mate/shared/widgets/app_bar_widget.dart';
 import 'package:flutter_mate/shared/widgets/desktop_sidebar.dart';
+import 'package:flutter_mate/shared/widgets/quick_access_cards.dart';
 import 'package:flutter_mate/features/progress_tracker/controller/progress_tracker_controller.dart';
 import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
 import '../widgets/widgets.dart';
@@ -191,6 +192,24 @@ class ProfilePage extends GetView<ProgressTrackerController> {
             .animate()
             .fadeIn(delay: 400.ms)
             .slideX(begin: -0.2),
+        const SizedBox(height: 24),
+
+        // New Features section
+        Text(
+          'Advanced Features',
+          style: AppTextStyles.h3.copyWith(
+            color: Theme.of(context).textTheme.bodyLarge?.color,
+            fontWeight: FontWeight.bold,
+          ),
+        ).animate().fadeIn(delay: 450.ms),
+        const SizedBox(height: 16),
+
+        // Analytics & Assessment Cards
+        QuickAccessCards(
+          showTitle: false,
+          cardHeight: 140,
+          isDark: isDark,
+        ).animate().fadeIn(delay: 500.ms).slideX(begin: -0.2),
         const SizedBox(height: 24),
 
         // Learning preferences section

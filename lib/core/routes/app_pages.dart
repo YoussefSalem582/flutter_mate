@@ -24,6 +24,11 @@ import 'package:flutter_mate/features/quiz/presentation/pages/quiz_page.dart';
 import 'package:flutter_mate/features/achievements/presentation/pages/achievements_page.dart';
 import 'package:flutter_mate/features/code_playground/presentation/pages/code_playground_page.dart';
 import 'package:flutter_mate/features/code_playground/controller/code_playground_binding.dart';
+import 'package:flutter_mate/features/analytics/controller/analytics_binding.dart';
+import 'package:flutter_mate/features/analytics/presentation/pages/analytics_dashboard_page.dart';
+import 'package:flutter_mate/features/assessment/controller/assessment_binding.dart';
+import 'package:flutter_mate/features/assessment/presentation/pages/skill_assessment_page.dart';
+import 'package:flutter_mate/features/assessment/presentation/pages/assessment_results_page.dart';
 
 /// App pages and routes configuration
 class AppPages {
@@ -136,6 +141,27 @@ class AppPages {
       binding: CodePlaygroundBinding(),
       customTransition: SmoothPageTransition(),
       transitionDuration: const Duration(milliseconds: 350),
+    ),
+    GetPage(
+      name: AppRoutes.analyticsDashboard,
+      page: () => const AnalyticsDashboardPage(),
+      binding: AnalyticsBinding(),
+      customTransition: SmoothFadeTransition(),
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.skillAssessment,
+      page: () => const SkillAssessmentPage(),
+      binding: AssessmentBinding(),
+      customTransition: SmoothPageTransition(),
+      transitionDuration: const Duration(milliseconds: 350),
+    ),
+    GetPage(
+      name: AppRoutes.assessmentResults,
+      page: () => const AssessmentResultsPage(),
+      binding: AssessmentBinding(),
+      customTransition: SmoothFadeTransition(),
+      transitionDuration: const Duration(milliseconds: 300),
     ),
   ];
 }

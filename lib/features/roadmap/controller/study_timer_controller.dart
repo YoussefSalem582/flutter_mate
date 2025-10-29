@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../data/models/lesson.dart';
 import './lesson_controller.dart';
+import '../../analytics/controller/analytics_controller.dart';
 
 /// Controller for managing persistent study timers across app sessions.
 ///
@@ -77,6 +78,23 @@ class StudyTimerController extends GetxController {
 
     await _saveTimerState(lessonId);
     _startPeriodicUpdate();
+
+    // Start analytics tracking
+    try {
+      final analyticsController = Get.find<AnalyticsController>();
+      final lessonController = Get.find<LessonController>();
+      final lesson = await lessonController.getLessonById(lessonId);
+
+      if (lesson != null) {
+        analyticsController.startStudySession(
+          lessonId: lessonId,
+          lessonTitle: lesson.title,
+          category: lesson.difficulty,
+        );
+      }
+    } catch (e) {
+      print('Analytics not available: $e');
+    }
   }
 
   /// Toggle timer play/pause
@@ -105,6 +123,14 @@ class StudyTimerController extends GetxController {
     _updateTimer?.cancel();
     _updateTimer = null;
     _startTime = null;
+
+    // End analytics session when pausing
+    try {
+      final analyticsController = Get.find<AnalyticsController>();
+      analyticsController.endStudySession(completed: false);
+    } catch (e) {
+      print('Analytics not available: $e');
+    }
   }
 
   void _resumeTimer() {
@@ -154,6 +180,14 @@ class StudyTimerController extends GetxController {
     // Pause the timer
     _pauseTimer();
     await _saveTimerState(currentLessonId.value);
+
+    // End analytics session as completed
+    try {
+      final analyticsController = Get.find<AnalyticsController>();
+      analyticsController.endStudySession(completed: true);
+    } catch (e) {
+      print('Analytics not available: $e');
+    }
 
     // Mark lesson as completed
     try {
@@ -340,6 +374,16 @@ class StudyTimerController extends GetxController {
     // Save state before closing
     if (currentLessonId.value.isNotEmpty) {
       _saveTimerState(currentLessonId.value);
+
+      // End analytics session if still tracking
+      try {
+        final analyticsController = Get.find<AnalyticsController>();
+        if (analyticsController.isTracking) {
+          analyticsController.endStudySession(completed: false);
+        }
+      } catch (e) {
+        print('Analytics not available: $e');
+      }
     }
     _updateTimer?.cancel();
     super.onClose();

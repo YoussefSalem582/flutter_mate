@@ -12,3 +12,4 @@ export 'loading_indicator.dart';
 export 'stat_card.dart';
 export 'app_bottom_nav_bar.dart';
 export 'app_bar_widget.dart';
+export 'quick_access_cards.dart';

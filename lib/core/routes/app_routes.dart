@@ -19,4 +19,9 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String achievements = '/achievements';
   static const String codePlayground = '/code-playground';
+
+  // Analytics & Assessment routes
+  static const String analyticsDashboard = '/analytics-dashboard';
+  static const String skillAssessment = '/skill-assessment';
+  static const String assessmentResults = '/assessment-results';
 }

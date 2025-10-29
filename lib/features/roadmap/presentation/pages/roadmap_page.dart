@@ -9,6 +9,7 @@ import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
 import 'package:flutter_mate/shared/widgets/app_bottom_nav_bar.dart';
 import 'package:flutter_mate/shared/widgets/app_bar_widget.dart';
 import 'package:flutter_mate/shared/widgets/desktop_sidebar.dart';
+import 'package:flutter_mate/shared/widgets/quick_access_cards.dart';
 
 /// Roadmap page showing learning path from beginner to advanced.
 ///
@@ -119,7 +120,16 @@ class RoadmapPage extends GetView<RoadmapController> {
         RoadmapHeader(overallProgress: overallProgress),
         const SizedBox(height: 24),
         StatsSummary(isDark: isDark),
+        const SizedBox(height: 24),
+
+        // Quick Access Cards
+        QuickAccessCards(
+          showTitle: true,
+          cardHeight: 100,
+          isDark: isDark,
+        ),
         const SizedBox(height: 32),
+
         StagesList(
           stages: controller.stages,
           isDark: isDark,

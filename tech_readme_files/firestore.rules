@@ -1,0 +1,297 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // Helper Functions
+    // ============================================
+    
+    /// Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    /// Check if user is the owner of the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    /// Check if user is authenticated (not anonymous/guest)
+    function isVerifiedUser() {
+      return isAuthenticated() && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+    
+    // ============================================
+    // Users Collection
+    // ============================================
+    match /users/{userId} {
+      // Anyone can read user profiles (for leaderboards, social features)
+      allow read: if true;
+      
+      // Users can create their own profile
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Users can update/delete only their own profile
+      allow update, delete: if isOwner(userId);
+      
+      // User Progress Subcollection
+      match /progress/{progressId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // User Achievements Subcollection
+      match /achievements/{achievementId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId);
+      }
+      
+      // User Settings Subcollection
+      match /settings/{settingId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // User Quiz Results Subcollection
+      match /quiz_results/{quizId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+    
+    // ============================================
+    // Lessons Collection (Read-Only for Users)
+    // ============================================
+    match /lessons/{lessonId} {
+      // All authenticated users can read lessons
+      allow read: if isAuthenticated();
+      
+      // Only admins can write (handle this via Admin SDK or specific admin role)
+      allow write: if false;
+    }
+    
+    // ============================================
+    // Achievements Definitions Collection
+    // ============================================
+    match /achievements/{achievementId} {
+      // All authenticated users can read achievement definitions
+      allow read: if isAuthenticated();
+      
+      // Only admins can modify achievement definitions
+      allow write: if false;
+    }
+    
+    // ============================================
+    // Quiz Questions Collection
+    // ============================================
+    match /quizzes/{quizId} {
+      // All authenticated users can read quizzes
+      allow read: if isAuthenticated();
+      
+      // Only admins can write
+      allow write: if false;
+      
+      // Quiz Questions Subcollection
+      match /questions/{questionId} {
+        allow read: if isAuthenticated();
+        allow write: if false;
+      }
+    }
+    
+    // ============================================
+    // Quiz Results Collection (Top Level)
+    // ============================================
+    match /quiz_results/{resultId} {
+      // Users can read their own quiz results
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Users can create quiz results with their own userId
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // Users can update/delete their own quiz results
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // ============================================
+    // Assessment Questions Collection
+    // ============================================
+    match /assessment_questions/{questionId} {
+      // All authenticated users can read assessment questions
+      allow read: if isAuthenticated();
+      
+      // Only admins can write (set manually in Firebase Console)
+      allow write: if false;
+    }
+    
+    // ============================================
+    // Skill Assessments Collection
+    // ============================================
+    match /skill_assessments/{assessmentId} {
+      // Users can read their own skill assessments
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Users can create assessments with their own userId
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // Users can update/delete their own assessments
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // ============================================
+    // Analytics Collection
+    // ============================================
+    match /analytics/{userId} {
+      // Users can only read/write their own analytics
+      allow read, write: if isOwner(userId);
+      
+      // Allow creation with proper userId
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ============================================
+    // Progress Tracking Collection
+    // ============================================
+    match /progress/{userId} {
+      // Users can only read/write their own progress
+      allow read, write: if isOwner(userId);
+      
+      // Lesson Progress Subcollection
+      match /lessons/{lessonId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Stage Progress Subcollection
+      match /stages/{stageId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+    
+    // ============================================
+    // User Progress Collection (Alternative)
+    // ============================================
+    match /user_progress/{userId} {
+      allow read, write: if isOwner(userId);
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ============================================
+    // Roadmap Collection (Read-Only for Users)
+    // ============================================
+    match /roadmap/{stageId} {
+      // All authenticated users can read roadmap stages
+      allow read: if isAuthenticated();
+      
+      // Only admins can write
+      allow write: if false;
+    }
+    
+    // ============================================
+    // Forum Posts Collection
+    // ============================================
+    match /forum_posts/{postId} {
+      // Anyone can read forum posts
+      allow read: if true;
+      
+      // Only authenticated (non-guest) users can create posts
+      allow create: if isVerifiedUser();
+      
+      // Users can update/delete their own posts
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Comments Subcollection
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isVerifiedUser();
+        allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      }
+    }
+    
+    // ============================================
+    // Leaderboard Collection
+    // ============================================
+    match /leaderboard/{userId} {
+      // Anyone can read leaderboard (for public rankings)
+      allow read: if true;
+      
+      // Only the user can update their own leaderboard entry
+      allow write: if isOwner(userId);
+    }
+    
+    // ============================================
+    // Study Timer Sessions Collection
+    // ============================================
+    match /study_sessions/{sessionId} {
+      // Users can read their own study sessions
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Users can create sessions with their own userId
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // Users can update/delete their own sessions
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // ============================================
+    // Code Playground Projects Collection
+    // ============================================
+    match /code_projects/{projectId} {
+      // Public projects are readable by all
+      allow read: if resource.data.isPublic == true || 
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
+      
+      // Users can create projects with their own userId
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // Users can update/delete their own projects
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // ============================================
+    // Notifications Collection
+    // ============================================
+    match /notifications/{notificationId} {
+      // Users can only read their own notifications
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // System can create notifications (via Cloud Functions or Admin SDK)
+      allow create: if false; // Handled by backend
+      
+      // Users can mark their own notifications as read
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+      
+      // Users can delete their own notifications
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // ============================================
+    // App Configuration Collection (Read-Only)
+    // ============================================
+    match /app_config/{configId} {
+      // All authenticated users can read app configuration
+      allow read: if isAuthenticated();
+      
+      // Only admins can write (via Admin SDK)
+      allow write: if false;
+    }
+    
+    // ============================================
+    // Feedback/Support Collection
+    // ============================================
+    match /feedback/{feedbackId} {
+      // Users can read their own feedback submissions
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Any authenticated user can submit feedback
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // Users cannot update/delete feedback once submitted
+      allow update, delete: if false;
+    }
+    
+    // ============================================
+    // Default Deny All Other Collections
+    // ============================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
