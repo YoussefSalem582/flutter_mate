@@ -169,7 +169,7 @@ class AuthController extends GetxController {
     }
 
     await _authService.signOut();
-    Get.offAllNamed('/login');
+    Get.offAllNamed('/splash');
   }
 
   /// Send password reset email

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -18,28 +18,211 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="FlutterMate - Your Flutter learning companion. Master Flutter development with structured roadmaps, progress tracking, and AI assistance.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  
+  <!-- Primary Meta Tags -->
+  <title>FlutterMate - Master Flutter Development</title>
+  <meta name="title" content="FlutterMate - Master Flutter Development">
+  <meta name="description" content="Master Flutter development with FlutterMate. Get structured learning roadmaps, track your progress, take skill assessments, and accelerate your Flutter journey. Sign up to start learning today!">
+  <meta name="keywords" content="Flutter, Flutter learning, Flutter tutorial, Flutter course, Flutter roadmap, Mobile development, App development, Learn Flutter, Flutter education">
+  <meta name="author" content="FlutterMate">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://youssefsalem582.github.io/flutter_mate/">
+  <meta property="og:title" content="FlutterMate - Master Flutter Development">
+  <meta property="og:description" content="Master Flutter development with structured roadmaps, progress tracking, skill assessments, and AI assistance. Join FlutterMate today!">
+  <meta property="og:image" content="icons/Icon-512.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://youssefsalem582.github.io/flutter_mate/">
+  <meta property="twitter:title" content="FlutterMate - Master Flutter Development">
+  <meta property="twitter:description" content="Master Flutter development with structured roadmaps, progress tracking, skill assessments, and AI assistance.">
+  <meta property="twitter:image" content="icons/Icon-512.png">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="flutter_mate">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FlutterMate">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>FlutterMate - Your Flutter Learning Companion</title>
+  <!-- Manifest -->
   <link rel="manifest" href="manifest.json">
+
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#4A90E2">
+
+  <!-- Preload critical resources for faster loading -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  
+  <!-- Preload Flutter assets -->
+  <link rel="modulepreload" href="flutter_bootstrap.js">
+  
+  <!-- Performance optimization hints -->
+  <meta http-equiv="Cache-Control" content="public, max-age=3600">
+  <meta http-equiv="Expires" content="3600">
 
   <!-- 
     Firebase SDK is handled by FlutterFire in the Dart code.
     Configuration is in lib/firebase_options.dart
     No need to initialize Firebase here for Flutter Web apps.
   -->
+
+  <style>
+    /* Loading Screen Styles */
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease-out;
+    }
+
+    #loading-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .logo-container {
+      margin-bottom: 30px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .logo-icon {
+      width: 100px;
+      height: 100px;
+      background: white;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .app-title {
+      color: white;
+      font-size: 32px;
+      font-weight: bold;
+      margin-top: 20px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .app-subtitle {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 16px;
+      margin-top: 10px;
+      text-align: center;
+      max-width: 300px;
+    }
+
+    .loader {
+      margin-top: 40px;
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .loading-text {
+      color: white;
+      margin-top: 20px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+  </style>
 </head>
 <body>
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="logo-container">
+      <div class="logo-icon">🚀</div>
+    </div>
+    <div class="app-title">FlutterMate</div>
+    <div class="app-subtitle">Your Flutter Learning Companion</div>
+    <div class="loader"></div>
+    <div class="loading-text">Loading your learning journey...</div>
+  </div>
+
+  <script>
+    // Performance monitoring
+    if ('performance' in window) {
+      window.addEventListener('load', function() {
+        const perfData = window.performance.timing;
+        const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
+        console.log('Page load time:', pageLoadTime + 'ms');
+      });
+    }
+
+    // Hide loading screen when Flutter app is ready
+    window.addEventListener('flutter-first-frame', function() {
+      const loadingScreen = document.getElementById('loading-screen');
+      if (loadingScreen) {
+        loadingScreen.classList.add('hidden');
+        setTimeout(() => {
+          loadingScreen.remove();
+        }, 500);
+      }
+    });
+
+    // Fallback: Hide loading screen after 10 seconds
+    setTimeout(() => {
+      const loadingScreen = document.getElementById('loading-screen');
+      if (loadingScreen) {
+        loadingScreen.classList.add('hidden');
+        setTimeout(() => {
+          loadingScreen.remove();
+        }, 500);
+      }
+    }, 10000);
+
+    // Service Worker registration for offline support and caching
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('flutter_service_worker.js', {
+          scope: './'
+        }).then(function(registration) {
+          console.log('ServiceWorker registered with scope:', registration.scope);
+        }).catch(function(error) {
+          console.log('ServiceWorker registration failed:', error);
+        });
+      });
+    }
+  </script>
+
+  <!-- Load Flutter bootstrap with high priority -->
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

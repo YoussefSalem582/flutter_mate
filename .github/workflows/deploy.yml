@@ -37,7 +37,7 @@ jobs:
       # Build with tokenized API keys from GitHub Secrets
       # All API keys MUST be provided via --dart-define for security
       # Add secrets in: Repository Settings > Secrets and variables > Actions
-      - name: Build web with secure tokenized API keys
+      - name: Build web with secure tokenized API keys and optimizations
         env:
           FIREBASE_WEB_KEY: ${{ secrets.FIREBASE_API_KEY_WEB }}
           FIREBASE_WEB_APP_ID: ${{ secrets.FIREBASE_APP_ID_WEB }}
@@ -46,11 +46,54 @@ jobs:
         run: |
           flutter build web --release \
             --base-href /flutter_mate/ \
+            --web-renderer canvaskit \
+            --pwa-strategy offline-first \
+            --tree-shake-icons \
+            --no-source-maps \
             --dart-define=FIREBASE_API_KEY_WEB=$FIREBASE_WEB_KEY \
             --dart-define=FIREBASE_APP_ID_WEB=$FIREBASE_WEB_APP_ID \
             --dart-define=FIREBASE_MEASUREMENT_ID_WEB=$FIREBASE_MEASUREMENT_ID \
             --dart-define=OPENAI_API_KEY=$OPENAI_KEY \
             --dart-define=PRODUCTION=true
+      
+      # Add cache headers configuration
+      - name: Create cache configuration
+        run: |
+          cat > build/web/_headers << 'EOF'
+          # Cache static assets for 1 year
+          /assets/*
+            Cache-Control: public, max-age=31536000, immutable
+          
+          /canvaskit/*
+            Cache-Control: public, max-age=31536000, immutable
+          
+          /*.js
+            Cache-Control: public, max-age=31536000, immutable
+          
+          # Cache fonts
+          /*.woff2
+            Cache-Control: public, max-age=31536000, immutable
+          
+          /*.woff
+            Cache-Control: public, max-age=31536000, immutable
+          
+          # Short cache for HTML and service worker
+          /
+            Cache-Control: public, max-age=3600, must-revalidate
+          
+          /index.html
+            Cache-Control: public, max-age=3600, must-revalidate
+          
+          /flutter_service_worker.js
+            Cache-Control: public, max-age=0, must-revalidate
+          
+          # Enable compression
+          /*
+            Content-Encoding: gzip
+            X-Content-Type-Options: nosniff
+            X-Frame-Options: SAMEORIGIN
+            X-XSS-Protection: 1; mode=block
+          EOF
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

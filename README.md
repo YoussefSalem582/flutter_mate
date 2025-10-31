@@ -97,8 +97,29 @@ Built with **Clean Architecture** principles:
 
 3. **Run the app:**
    ```bash
+   # Mobile/Desktop
    flutter run
+   
+   # Web (optimized)
+   flutter run -d chrome
    ```
+
+### Building for Web (Optimized)
+```bash
+# Quick build with all optimizations
+./build-web-optimized.sh  # Linux/Mac
+# or
+.\build-web-optimized.ps1  # Windows
+
+# Manual build
+flutter build web --release \
+  --base-href /flutter_mate/ \
+  --web-renderer canvaskit \
+  --pwa-strategy offline-first \
+  --tree-shake-icons
+```
+
+See [DEPLOYMENT_GUIDE.md](tech_readme_files/DEPLOYMENT_GUIDE.md) for details.
 
 ### Quick Start
 1. Launch the app and complete the onboarding
@@ -111,12 +132,18 @@ Built with **Clean Architecture** principles:
 
 ## 📖 Documentation
 
+### Core Documentation
 - **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Project overview and goals
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical architecture details
 - **[LESSON_SYSTEM.md](LESSON_SYSTEM.md)** - Lesson implementation guide
 - **[LESSON_GUIDE.md](LESSON_GUIDE.md)** - User guide for lessons
 - **[QUICK_START.md](QUICK_START.md)** - Development setup guide
 - **[ROADMAP.md](ROADMAP.md)** - Future development plans
+
+### Web & Deployment
+- **[WEB_PERFORMANCE_OPTIMIZATION.md](tech_readme_files/WEB_PERFORMANCE_OPTIMIZATION.md)** - Performance optimizations explained
+- **[DEPLOYMENT_GUIDE.md](tech_readme_files/DEPLOYMENT_GUIDE.md)** - Build and deploy instructions
+- **[GITHUB_PAGES.md](tech_readme_files/GITHUB_PAGES.md)** - GitHub Pages setup
 
 ## 🛠️ Tech Stack
 

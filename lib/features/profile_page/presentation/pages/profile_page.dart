@@ -45,11 +45,11 @@ class ProfilePage extends GetView<ProgressTrackerController> {
   /// Displays an alert dialog with:
   /// - Logout confirmation message
   /// - Cancel button (dismisses dialog)
-  /// - Logout button (signs out and navigates to login)
+  /// - Logout button (signs out and navigates to splash)
   ///
   /// On logout:
   /// - Calls [authController.signOut()]
-  /// - Navigates to login page (replaces all routes)
+  /// - Navigates to splash page (handled by auth controller)
   void _showLogoutDialog(BuildContext context, AuthController authController) {
     showDialog(
       context: context,
@@ -65,7 +65,6 @@ class ProfilePage extends GetView<ProgressTrackerController> {
             onPressed: () async {
               Navigator.pop(context);
               await authController.signOut();
-              Get.offAllNamed(AppRoutes.login);
             },
             child: const Text(
               'Logout',
