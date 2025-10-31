@@ -109,14 +109,11 @@ class AchievementsPage extends GetView<AchievementController> {
                   builder: (context) {
                     final authController = Get.find<AuthController>();
                     final user = authController.currentUser.value;
-                    final isGuest = authController.isGuest;
 
                     String greeting = 'Your Achievements';
-                    if (user != null && !isGuest) {
+                    if (user != null) {
                       final name = user.displayName ?? user.email.split('@')[0];
                       greeting = "$name's Achievements";
-                    } else if (isGuest) {
-                      greeting = 'Guest Achievements';
                     }
 
                     return Text(

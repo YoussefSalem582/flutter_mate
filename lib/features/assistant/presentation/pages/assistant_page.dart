@@ -644,13 +644,10 @@ class AssistantPage extends GetView<AssistantController> {
   Widget _buildEmptyState(BuildContext context) {
     final authController = Get.find<AuthController>();
     final user = authController.currentUser.value;
-    final isGuest = authController.isGuest;
 
     String greeting = 'Hello';
-    if (user != null && !isGuest) {
+    if (user != null) {
       greeting = 'Hello, ${user.displayName ?? user.email.split('@')[0]}!';
-    } else if (isGuest) {
-      greeting = 'Hello, Guest!';
     }
 
     return Center(

@@ -37,13 +37,12 @@ class GuestMiddleware extends GetMiddleware {
     try {
       final authController = Get.find<AuthController>();
 
-      // Allow guest users to access auth pages so they can upgrade their account
-      // If user is authenticated AND not a guest, redirect to home
-      if (authController.isAuthenticated.value && !authController.isGuest) {
+      // If user is authenticated, redirect to home
+      if (authController.isAuthenticated.value) {
         return const RouteSettings(name: AppRoutes.roadmap);
       }
 
-      // User is not authenticated or is a guest, allow navigation to auth pages
+      // User is not authenticated, allow navigation to auth pages
       return null;
     } catch (e) {
       // Auth controller not initialized, allow navigation

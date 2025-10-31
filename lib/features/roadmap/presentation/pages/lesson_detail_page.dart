@@ -334,14 +334,11 @@ class LessonDetailPage extends StatelessWidget {
   Widget _buildWelcomeBanner(Lesson lesson) {
     final authController = Get.find<AuthController>();
     final user = authController.currentUser.value;
-    final isGuest = authController.isGuest;
 
     String greeting = 'Ready to Learn?';
-    if (user != null && !isGuest) {
+    if (user != null) {
       final name = user.displayName ?? user.email.split('@')[0];
       greeting = 'Welcome, $name!';
-    } else if (isGuest) {
-      greeting = 'Welcome, Guest!';
     }
 
     return Container(

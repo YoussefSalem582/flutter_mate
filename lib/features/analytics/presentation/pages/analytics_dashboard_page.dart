@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_mate/core/constants/app_colors.dart';
-import 'package:flutter_mate/core/routes/app_routes.dart';
 import 'package:flutter_mate/core/utils/responsive_utils.dart';
 import 'package:flutter_mate/features/analytics/controller/analytics_controller.dart';
 import 'package:flutter_mate/features/analytics/presentation/widgets/productivity_card.dart';
@@ -10,8 +9,6 @@ import 'package:flutter_mate/features/analytics/presentation/widgets/time_chart_
 import 'package:flutter_mate/features/analytics/presentation/widgets/study_stats_card.dart';
 import 'package:flutter_mate/features/analytics/presentation/widgets/insights_card.dart';
 import 'package:flutter_mate/features/analytics/presentation/widgets/assessment_analytics_card.dart';
-import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
-import 'package:flutter_mate/shared/widgets/guest_login_prompt.dart';
 
 /// Analytics Dashboard Page - Comprehensive view of user learning analytics
 ///
@@ -28,22 +25,12 @@ class AnalyticsDashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(AnalyticsController());
-    final authController = Get.find<AuthController>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Analytics'),
         actions: [
-          Obx(() {
-            // Only show actions for authenticated users
-            if (authController.isGuest ||
-                authController.currentUser.value == null) {
-              return const SizedBox.shrink();
-            }
-
-            return Row(
-              children: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => controller.refreshAnalytics(),
@@ -83,29 +70,9 @@ class AnalyticsDashboardPage extends StatelessWidget {
               ),
             ],
           ),
-              ],
-            );
-          }),
         ],
       ),
       body: Obx(() {
-        // Show guest prompt if user is not authenticated
-        if (authController.isGuest ||
-            authController.currentUser.value == null) {
-          return Center(
-            child: GuestLoginPrompt(
-              title: 'Analytics Unavailable',
-              message:
-                  'Track your study time, streaks, and productivity by creating an account.',
-              icon: Icons.analytics_outlined,
-              actionText: 'Sign Up to View Analytics',
-              onActionPressed: () {
-                Get.toNamed(AppRoutes.login);
-              },
-            ),
-          );
-        }
-
         if (controller.isLoading.value) {
           return const Center(
             child: CircularProgressIndicator(),

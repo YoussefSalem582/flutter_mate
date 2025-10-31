@@ -228,16 +228,6 @@ class _LoginPageState extends State<LoginPage> {
                       backgroundColor: isDark ? Colors.white : Colors.white,
                       textColor: Colors.black87,
                     ).animate().fadeIn(delay: 900.ms).slideX(begin: -0.2),
-                    const SizedBox(height: 12),
-
-                    // Guest Mode
-                    SocialLoginButton(
-                      onPressed: () => authController.signInAsGuest(),
-                      icon: Icons.person_outline,
-                      label: 'Continue as Guest',
-                      backgroundColor: Colors.grey[200]!,
-                      textColor: Colors.black87,
-                    ).animate().fadeIn(delay: 1000.ms).slideX(begin: 0.2),
                     const SizedBox(height: 32),
 
                     // Sign Up Link

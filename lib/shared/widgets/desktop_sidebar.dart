@@ -129,7 +129,6 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
     return GetBuilder<AuthController>(
       builder: (authController) {
         final user = authController.currentUser.value;
-        final isGuest = authController.isGuest;
 
         return Container(
           padding: const EdgeInsets.all(20),
@@ -187,7 +186,7 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                                 height: 70,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) => Icon(
-                                  isGuest ? Icons.person_outline : Icons.person,
+                                  Icons.person,
                                   size: 40,
                                   color: widget.isDark
                                       ? AppColors.darkPrimary
@@ -196,7 +195,7 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                               ),
                             )
                           : Icon(
-                              isGuest ? Icons.person_outline : Icons.person,
+                              Icons.person,
                               size: 40,
                               color: widget.isDark
                                   ? AppColors.darkPrimary
@@ -244,9 +243,7 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
 
               // User Name
               Text(
-                isGuest
-                    ? 'Guest User'
-                    : user?.displayName ?? user?.username ?? 'Flutter Learner',
+                user?.displayName ?? user?.username ?? 'Flutter Learner',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -257,7 +254,7 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                 overflow: TextOverflow.ellipsis,
               ),
 
-              if (!isGuest && user?.email != null) ...[
+              if (user?.email != null) ...[
                 const SizedBox(height: 4),
                 Text(
                   user!.email,
@@ -690,23 +687,11 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
           const SizedBox(height: 8),
 
           // Sign Out
-          GetBuilder<AuthController>(
-            builder: (authController) {
-              if (authController.isGuest) {
-                return _buildFooterButton(
-                  icon: Icons.login,
-                  label: 'Sign In',
-                  onTap: () => Get.toNamed(AppRoutes.login),
-                  color: Colors.green,
-                );
-              }
-              return _buildFooterButton(
-                icon: Icons.logout,
-                label: 'Sign Out',
-                onTap: () => _showSignOutDialog(authController),
-                color: Colors.red,
-              );
-            },
+          _buildFooterButton(
+            icon: Icons.logout,
+            label: 'Sign Out',
+            onTap: () => _showSignOutDialog(Get.find<AuthController>()),
+            color: Colors.red,
           ),
         ],
       ),

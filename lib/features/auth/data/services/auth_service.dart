@@ -125,30 +125,6 @@ class AuthService {
     }
   }
 
-  /// Sign in anonymously (for offline mode)
-  Future<AuthResult> signInAnonymously() async {
-    try {
-      final credential = await _auth.signInAnonymously();
-
-      // Create minimal user profile
-      await _createUserProfile(
-        uid: credential.user!.uid,
-        email: 'anonymous@fluttermate.com',
-        username: 'Guest_${credential.user!.uid.substring(0, 8)}',
-        provider: AuthProvider.anonymous,
-      );
-
-      return AuthResult.success(credential.user!);
-    } on FirebaseAuthException catch (e) {
-      // ignore: avoid_print
-      print(
-          'Firebase Auth Error [Anonymous Sign In]: ${e.code} - ${e.message}');
-      return AuthResult.failure(_getAuthErrorMessage(e.code, e.message));
-    } catch (e) {
-      return AuthResult.failure('Anonymous sign-in failed: $e');
-    }
-  }
-
   /// Sign out
   Future<void> signOut() async {
     // Sign out from Google and Firebase

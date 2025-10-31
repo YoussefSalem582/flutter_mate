@@ -149,14 +149,11 @@ class OutputConsoleWidget extends GetView<CodePlaygroundController> {
   Widget _buildEmptyState() {
     final authController = Get.find<AuthController>();
     final user = authController.currentUser.value;
-    final isGuest = authController.isGuest;
 
     String greeting = 'Happy Coding!';
-    if (user != null && !isGuest) {
+    if (user != null) {
       final name = user.displayName ?? user.email.split('@')[0];
       greeting = 'Happy Coding, $name!';
-    } else if (isGuest) {
-      greeting = 'Happy Coding, Guest!';
     }
 
     return Center(

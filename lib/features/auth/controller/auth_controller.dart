@@ -42,7 +42,6 @@ class AuthController extends GetxController {
       if (Get.isRegistered<dynamic>()) {
         final syncService = Get.find<dynamic>();
         if (syncService.runtimeType.toString() == 'ProgressSyncService') {
-          await syncService.migrateGuestProgress();
           await syncService.autoSync();
         }
       }
@@ -147,30 +146,6 @@ class AuthController extends GetxController {
     if (result.isSuccess) {
       Get.offAllNamed('/roadmap');
     } else if (!result.isCancelled) {
-      Get.snackbar(
-        'Error',
-        result.message,
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    }
-  }
-
-  /// Sign in anonymously (guest mode)
-  Future<void> signInAsGuest() async {
-    isLoading.value = true;
-
-    final result = await _authService.signInAnonymously();
-
-    isLoading.value = false;
-
-    if (result.isSuccess) {
-      Get.snackbar(
-        'Guest Mode',
-        'You\'re signed in as a guest. Sign up to save your progress!',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      Get.offAllNamed('/roadmap');
-    } else {
       Get.snackbar(
         'Error',
         result.message,
@@ -327,9 +302,6 @@ class AuthController extends GetxController {
 
     return true;
   }
-
-  /// Check if user is guest
-  bool get isGuest => currentUser.value?.provider == AuthProvider.anonymous;
 
   /// Check if user has premium
   bool get isPremium =>

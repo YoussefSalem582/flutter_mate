@@ -5,8 +5,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/routes/app_routes.dart';
-import '../../../../shared/widgets/guest_login_prompt.dart';
-import '../../../auth/controller/auth_controller.dart';
 import '../../controller/assessment_controller.dart';
 import '../../data/models/skill_assessment.dart';
 
@@ -30,19 +28,11 @@ class AssessmentHistoryPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Assessment History'),
         actions: [
-          Obx(() {
-            final authController = Get.find<AuthController>();
-            // Only show "Take New Assessment" button if user is authenticated
-            if (authController.isGuest ||
-                authController.currentUser.value == null) {
-              return const SizedBox.shrink();
-            }
-            return IconButton(
-              icon: const Icon(Icons.assessment_outlined),
-              onPressed: () => controller.startAssessment(),
-              tooltip: 'Take New Assessment',
-            );
-          }),
+          IconButton(
+            icon: const Icon(Icons.assessment_outlined),
+            onPressed: () => controller.startAssessment(),
+            tooltip: 'Take New Assessment',
+          ),
         ],
       ),
       body: ResponsiveBuilder(
@@ -63,25 +53,6 @@ class AssessmentHistoryPage extends StatelessWidget {
     bool isDark,
   ) {
     return Obx(() {
-      // Get auth controller directly
-      final authController = Get.find<AuthController>();
-
-      // Check if user is authenticated
-      if (authController.isGuest || authController.currentUser.value == null) {
-        return Center(
-          child: GuestLoginPrompt(
-            title: 'History Unavailable',
-            message:
-                'Sign in to view your assessment history and track your progress over time.',
-            icon: Icons.history,
-            actionText: 'Sign In to View History',
-            onActionPressed: () {
-              Get.toNamed(AppRoutes.login);
-            },
-          ),
-        );
-      }
-
       // Loading state
       if (controller.isLoading.value) {
         return const Center(

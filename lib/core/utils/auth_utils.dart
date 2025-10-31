@@ -8,20 +8,20 @@ import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
 class AuthUtils {
   AuthUtils._();
 
-  /// Check if user is authenticated (not a guest) without showing dialog
-  /// Returns true if authenticated, false if guest
+  /// Check if user is authenticated without showing dialog
+  /// Returns true if authenticated, false otherwise
   static bool isAuthenticated() {
     try {
       final authController = Get.find<AuthController>();
-      return !authController.isGuest;
+      return authController.isAuthenticated.value;
     } catch (e) {
       return false;
     }
   }
 
-  /// Check if user is authenticated (not a guest)
-  /// If guest, show dialog prompting to sign up
-  /// Returns true if authenticated, false if guest
+  /// Check if user is authenticated
+  /// If not authenticated, show dialog prompting to sign in
+  /// Returns true if authenticated, false otherwise
   static bool requireAuth({
     String title = 'Sign In Required',
     String message =
@@ -30,8 +30,8 @@ class AuthUtils {
     try {
       final authController = Get.find<AuthController>();
 
-      // If user is a guest, show auth prompt
-      if (authController.isGuest) {
+      // If user is not authenticated, show auth prompt
+      if (!authController.isAuthenticated.value) {
         _showAuthRequiredDialog(title: title, message: message);
         return false;
       }
@@ -55,8 +55,8 @@ class AuthUtils {
     try {
       final authController = Get.find<AuthController>();
 
-      // If user is a guest, schedule dialog to show after build
-      if (authController.isGuest) {
+      // If user is not authenticated, schedule dialog to show after build
+      if (!authController.isAuthenticated.value) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _showAuthRequiredDialog(title: title, message: message);
         });

@@ -18,10 +18,10 @@ class ProgressSyncService {
   /// Get current user ID
   String? get _userId => _auth.currentUser?.uid;
 
-  /// Check if user is authenticated (not guest)
+  /// Check if user is authenticated
   bool get _isAuthenticated {
     final user = _auth.currentUser;
-    return user != null && !user.isAnonymous;
+    return user != null;
   }
 
   /// Sync local progress to Firestore
@@ -174,28 +174,5 @@ class ProgressSyncService {
     await _box.delete(_advancedModeKey);
     await _box.delete(_lastSyncKey);
     print('🗑️ Local progress data cleared');
-  }
-
-  /// Migrate guest progress to authenticated user
-  Future<void> migrateGuestProgress() async {
-    if (!_isAuthenticated || _userId == null) return;
-
-    try {
-      // Get local guest progress from Hive
-      final guestLessons = List<String>.from(
-          _box.get(_completedLessonsKey, defaultValue: <String>[]));
-
-      if (guestLessons.isNotEmpty) {
-        print(
-            '🔄 Migrating ${guestLessons.length} lessons from guest to user account...');
-
-        // Sync local data to new user account
-        await syncToCloud();
-
-        print('✅ Guest progress migrated successfully');
-      }
-    } catch (e) {
-      print('❌ Error migrating guest progress: $e');
-    }
   }
 }

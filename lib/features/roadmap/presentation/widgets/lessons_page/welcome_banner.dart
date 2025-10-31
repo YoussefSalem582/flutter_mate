@@ -25,19 +25,15 @@ class WelcomeBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final authController = Get.find<AuthController>();
     final user = authController.currentUser.value;
-    final isGuest = authController.isGuest;
     final isDesktop = MediaQuery.of(context).size.width > 900;
 
     String greeting = 'Start Your Journey! 🚀';
     String subtitle = 'Tap the first lesson below to begin learning Flutter';
 
-    if (user != null && !isGuest) {
+    if (user != null) {
       final name = user.displayName ?? user.email.split('@')[0];
       greeting = 'Welcome, $name! 🚀';
       subtitle = 'Ready to master Flutter? Start with your first lesson below';
-    } else if (isGuest) {
-      greeting = 'Welcome, Guest! 🚀';
-      subtitle = 'Sign up to save your progress as you learn';
     }
 
     return Container(

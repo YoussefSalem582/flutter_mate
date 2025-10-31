@@ -107,16 +107,6 @@ class RoadmapPage extends GetView<RoadmapController> {
     return ListView(
       padding: EdgeInsets.all(padding),
       children: [
-        // Guest user banner
-        Obx(() {
-          if (authController.isGuest) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: _buildGuestBanner(isDark),
-            );
-          }
-          return const SizedBox.shrink();
-        }),
         RoadmapHeader(overallProgress: overallProgress),
         const SizedBox(height: 24),
         StatsSummary(isDark: isDark),
@@ -158,16 +148,6 @@ class RoadmapPage extends GetView<RoadmapController> {
           topContent: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Guest user banner
-              Obx(() {
-                if (authController.isGuest) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: _buildGuestBanner(isDark),
-                  );
-                }
-                return const SizedBox.shrink();
-              }),
               RoadmapHeader(overallProgress: overallProgress),
               const SizedBox(height: 32),
               StatsSummary(isDark: isDark),

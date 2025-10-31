@@ -923,27 +923,6 @@ class SettingsCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Conditional: Show "Create Account" button for guest users
-          Obx(() {
-            if (authController.isGuest) {
-              return Column(
-                children: [
-                  SettingsTile(
-                    title: 'Create Account',
-                    subtitle: 'Save your progress permanently',
-                    icon: Icons.person_add,
-                    color: AppColors.success,
-                    onTap: () {
-                      Get.toNamed(AppRoutes.signup);
-                    },
-                  ),
-                  const Divider(height: 1),
-                ],
-              );
-            }
-            return const SizedBox.shrink();
-          }),
-
           // Language selection
           SettingsTile(
             title: 'Language',
@@ -974,35 +953,24 @@ class SettingsCard extends StatelessWidget {
           ),
           const Divider(height: 1),
 
-          // Conditional: Show account settings for authenticated users only
-          Obx(() {
-            // Show account settings only for logged-in users
-            if (!authController.isGuest) {
-              return Column(
-                children: [
-                  // Account management option
-                  SettingsTile(
-                    title: 'Account',
-                    subtitle: 'Manage your account',
-                    icon: Icons.account_circle,
-                    color: Colors.purple,
-                    onTap: () => _showAccountDialog(context),
-                  ),
-                  const Divider(height: 1),
+          // Account management option
+          SettingsTile(
+            title: 'Account',
+            subtitle: 'Manage your account',
+            icon: Icons.account_circle,
+            color: Colors.purple,
+            onTap: () => _showAccountDialog(context),
+          ),
+          const Divider(height: 1),
 
-                  // Logout option (calls parent callback)
-                  SettingsTile(
-                    title: 'Logout',
-                    subtitle: 'Sign out of your account',
-                    icon: Icons.logout,
-                    color: Colors.red,
-                    onTap: onLogout,
-                  ),
-                ],
-              );
-            }
-            return const SizedBox.shrink();
-          }),
+          // Logout option (calls parent callback)
+          SettingsTile(
+            title: 'Logout',
+            subtitle: 'Sign out of your account',
+            icon: Icons.logout,
+            color: Colors.red,
+            onTap: onLogout,
+          ),
         ],
       ),
     );

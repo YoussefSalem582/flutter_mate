@@ -220,14 +220,11 @@ class ProgressTrackerPage extends GetView<ProgressTrackerController> {
   Widget _buildWelcomeBanner(BuildContext context) {
     final authController = Get.find<AuthController>();
     final user = authController.currentUser.value;
-    final isGuest = authController.isGuest;
 
     String greeting = 'Welcome to Your Progress';
-    if (user != null && !isGuest) {
+    if (user != null) {
       final name = user.displayName ?? user.email.split('@')[0];
       greeting = 'Welcome back, $name!';
-    } else if (isGuest) {
-      greeting = 'Welcome, Guest!';
     }
 
     return Container(

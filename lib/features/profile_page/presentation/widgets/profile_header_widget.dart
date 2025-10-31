@@ -90,7 +90,6 @@ class ProfileHeaderWidget extends StatelessWidget {
           user?.username ??
           (user != null ? user.email.split('@').first : 'Flutter Developer');
       final userEmail = user?.email ?? 'learning@fluttermate.app';
-      final isGuest = authController.isGuest;
       final joinedDate = user != null
           ? _formatJoinDate(user.createdAt)
           : 'Learning since October 2025';
@@ -143,27 +142,26 @@ class ProfileHeaderWidget extends StatelessWidget {
                           : null,
                       child: user?.photoURL == null
                           ? Icon(
-                              isGuest ? Icons.person_outline : Icons.person,
+                              Icons.person,
                               size: 50,
                               color: AppColors.info,
                             )
                           : null,
                     ),
                   ),
-                  if (!isGuest)
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.success,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: const Icon(
-                        Icons.verified,
-                        size: 16,
-                        color: Colors.white,
-                      ),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.success,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
                     ),
+                    child: const Icon(
+                      Icons.verified,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -195,13 +193,13 @@ class ProfileHeaderWidget extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      isGuest ? Icons.explore : Icons.calendar_today,
+                      Icons.calendar_today,
                       size: 14,
                       color: Colors.white,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      isGuest ? 'Guest Mode' : joinedDate,
+                      joinedDate,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Colors.white.withOpacity(0.9),
                       ),
