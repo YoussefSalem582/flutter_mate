@@ -14,6 +14,7 @@ import 'package:flutter_mate/features/roadmap/controller/lesson_binding.dart';
 import 'package:flutter_mate/features/roadmap/presentation/pages/roadmap_page.dart';
 import 'package:flutter_mate/features/roadmap/presentation/pages/lessons_page.dart';
 import 'package:flutter_mate/features/roadmap/presentation/pages/lesson_detail_page.dart';
+import 'package:flutter_mate/features/roadmap/presentation/pages/stage_detail_page.dart';
 import 'package:flutter_mate/features/progress_tracker/controller/progress_tracker_binding.dart';
 import 'package:flutter_mate/features/progress_tracker/presentation/pages/progress_tracker_page.dart';
 import 'package:flutter_mate/features/assistant/controller/assistant_binding.dart';
@@ -29,6 +30,7 @@ import 'package:flutter_mate/features/analytics/presentation/pages/analytics_das
 import 'package:flutter_mate/features/assessment/controller/assessment_binding.dart';
 import 'package:flutter_mate/features/assessment/presentation/pages/skill_assessment_page.dart';
 import 'package:flutter_mate/features/assessment/presentation/pages/assessment_results_page.dart';
+import 'package:flutter_mate/features/assessment/presentation/pages/assessment_history_page.dart';
 
 /// App pages and routes configuration
 class AppPages {
@@ -109,14 +111,22 @@ class AppPages {
       transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
-      name: '/lessons',
+      name: AppRoutes.stageDetail,
+      page: () => const StageDetailPage(),
+      binding: RoadmapBinding(),
+      middlewares: [AuthMiddleware()],
+      customTransition: SmoothPageTransition(),
+      transitionDuration: const Duration(milliseconds: 350),
+    ),
+    GetPage(
+      name: AppRoutes.lessons,
       page: () => const LessonsPage(),
       binding: LessonBinding(),
       customTransition: SmoothPageTransition(),
       transitionDuration: const Duration(milliseconds: 350),
     ),
     GetPage(
-      name: '/lesson-detail',
+      name: AppRoutes.lessonDetail,
       page: () => const LessonDetailPage(),
       binding: LessonBinding(),
       customTransition: SmoothPageTransition(),
@@ -162,6 +172,13 @@ class AppPages {
       binding: AssessmentBinding(),
       customTransition: SmoothFadeTransition(),
       transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.assessmentHistory,
+      page: () => const AssessmentHistoryPage(),
+      binding: AssessmentBinding(),
+      customTransition: SmoothPageTransition(),
+      transitionDuration: const Duration(milliseconds: 350),
     ),
   ];
 }

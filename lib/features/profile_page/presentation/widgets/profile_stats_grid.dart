@@ -15,14 +15,24 @@ class ProfileStatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<ProgressTrackerController>();
+    ProgressTrackerController? controller;
+
+    try {
+      controller = Get.find<ProgressTrackerController>();
+      // Refresh stats when widget builds
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller?.refreshStats();
+      });
+    } catch (e) {
+      print('ProgressTrackerController not found: $e');
+    }
 
     return Obx(() {
-      final completedLessons = controller.lessonsCompleted.value;
-      final totalLessons = controller.totalLessons.value;
-      final projects = controller.projectsCompleted.value;
-      final streak = controller.dayStreak.value;
-      final xp = controller.xpPoints.value;
+      final completedLessons = controller?.lessonsCompleted.value ?? 0;
+      final totalLessons = controller?.totalLessons.value ?? 0;
+      final projects = controller?.projectsCompleted.value ?? 0;
+      final streak = controller?.dayStreak.value ?? 0;
+      final xp = controller?.xpPoints.value ?? 0;
 
       final stats = [
         {

@@ -49,40 +49,83 @@ class ProgressTrackerController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _computeStats();
+    _loadDataAndComputeStats();
+
+    // Watch for changes and recompute
     ever<Map<String, double>>(
       _roadmapController.progress,
       (_) => _computeStats(),
     );
     ever<List<RoadmapStage>>(_roadmapController.stages, (_) => _computeStats());
-    // Recompute when navigating back to progress page to get latest lesson data
-    ever(Get.currentRoute.obs, (_) => _computeStats());
+
+    // Recompute when navigating back to progress page
+    ever(Get.currentRoute.obs, (_) {
+      if (Get.currentRoute == '/progress-tracker' ||
+          Get.currentRoute == '/profile') {
+        _computeStats();
+      }
+    });
+  }
+
+  /// Load data from dependencies and compute stats
+  Future<void> _loadDataAndComputeStats() async {
+    // Wait for async data loading to complete
+    // Both controllers load their data in onInit(), so we just need to wait a bit
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    // Compute stats with loaded data
+    _computeStats();
+  }
+
+  /// Public method to refresh stats
+  Future<void> refreshStats() async {
+    await _loadDataAndComputeStats();
   }
 
   void _computeStats() {
-    // Get total lessons completed from lesson controller
-    final completionStatus = _lessonController.completionStatus;
-    final completed =
-        completionStatus.values.where((isCompleted) => isCompleted).length;
+    try {
+      // Get total lessons completed from lesson controller
+      final completionStatus = _lessonController.completionStatus;
+      if (completionStatus.isEmpty) {
+        // No lessons loaded yet, use defaults
+        lessonsCompleted.value = 0;
+        totalLessons.value = 0;
+      } else {
+        final completed =
+            completionStatus.values.where((isCompleted) => isCompleted).length;
+        lessonsCompleted.value = completed;
+        totalLessons.value = completionStatus.length;
+      }
 
-    lessonsCompleted.value = completed;
-    totalLessons.value = completionStatus.length;
+      // Calculate overall progress from all stages
+      double totalProgress = 0;
+      final stages = _roadmapController.stages;
+      int stageCount = stages.length;
 
-    // Calculate overall progress from all stages
-    double totalProgress = 0;
-    int stageCount = _roadmapController.stages.length;
+      if (stageCount > 0) {
+        for (final stage in stages) {
+          totalProgress += _roadmapController.stageProgress(stage.id);
+        }
+        overallProgress.value = totalProgress / stageCount;
+      } else {
+        overallProgress.value = 0.0;
+      }
 
-    for (final stage in _roadmapController.stages) {
-      totalProgress += _roadmapController.stageProgress(stage.id);
+      // Derived stats
+      projectsCompleted.value = max((lessonsCompleted.value / 3).round(), 0);
+      dayStreak.value = max((overallProgress.value * 30).round(), 0);
+      xpPoints.value =
+          (lessonsCompleted.value * 25) + (projectsCompleted.value * 100);
+    } catch (e) {
+      print('Error computing progress stats: $e');
+      // Keep default values on error
+      lessonsCompleted.value = 0;
+      totalLessons.value = 0;
+      overallProgress.value = 0.0;
+      projectsCompleted.value = 0;
+      dayStreak.value = 0;
+      xpPoints.value = 0;
     }
-
-    overallProgress.value = stageCount > 0 ? totalProgress / stageCount : 0.0;
-
-    // Derived stats
-    projectsCompleted.value = max((lessonsCompleted.value / 3).round(), 0);
-    dayStreak.value = max((overallProgress.value * 30).round(), 0);
-    xpPoints.value =
-        (lessonsCompleted.value * 25) + (projectsCompleted.value * 100);
   }
 }
 

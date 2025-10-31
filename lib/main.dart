@@ -11,6 +11,13 @@ import 'package:flutter_mate/features/auth/controller/auth_controller.dart';
 import 'package:flutter_mate/features/quiz/services/quiz_tracking_service.dart';
 import 'package:flutter_mate/features/achievements/data/repositories/achievement_repository.dart';
 import 'package:flutter_mate/features/achievements/controller/achievement_controller.dart';
+import 'package:flutter_mate/features/roadmap/data/repositories/roadmap_repository.dart';
+import 'package:flutter_mate/features/roadmap/data/repositories/roadmap_repository_impl.dart';
+import 'package:flutter_mate/features/roadmap/data/repositories/lesson_repository.dart';
+import 'package:flutter_mate/features/roadmap/data/services/progress_sync_service.dart';
+import 'package:flutter_mate/features/roadmap/controller/roadmap_controller.dart';
+import 'package:flutter_mate/features/roadmap/controller/lesson_controller.dart';
+import 'package:flutter_mate/features/progress_tracker/controller/progress_tracker_controller.dart';
 
 void main() async {
   // Ensure Flutter bindings are initialized
@@ -53,6 +60,46 @@ void main() async {
   final achievementRepo = AchievementRepositoryImpl();
   Get.put<AchievementRepository>(achievementRepo);
   Get.put(AchievementController(achievementRepo));
+
+  // Initialize Progress Tracker dependencies (for Profile page)
+  // These need to be available early since Profile page uses them
+  if (!Get.isRegistered<RoadmapRepository>()) {
+    Get.lazyPut<RoadmapRepository>(() => RoadmapRepositoryImpl());
+  }
+
+  if (!Get.isRegistered<ProgressSyncService>()) {
+    Get.lazyPut<ProgressSyncService>(() => ProgressSyncService());
+  }
+
+  if (!Get.isRegistered<LessonRepository>()) {
+    Get.lazyPut<LessonRepository>(
+      () => LessonRepositoryImpl(Get.find<ProgressSyncService>()),
+    );
+  }
+
+  if (!Get.isRegistered<RoadmapController>()) {
+    Get.lazyPut<RoadmapController>(
+      () => RoadmapController(repository: Get.find<RoadmapRepository>()),
+      fenix: true, // Keep alive even after page disposal
+    );
+  }
+
+  if (!Get.isRegistered<LessonController>()) {
+    Get.lazyPut<LessonController>(
+      () => LessonController(Get.find<LessonRepository>()),
+      fenix: true, // Keep alive even after page disposal
+    );
+  }
+
+  if (!Get.isRegistered<ProgressTrackerController>()) {
+    Get.lazyPut<ProgressTrackerController>(
+      () => ProgressTrackerController(
+        roadmapController: Get.find<RoadmapController>(),
+        lessonController: Get.find<LessonController>(),
+      ),
+      fenix: true, // Keep alive for profile page access
+    );
+  }
 
   runApp(const FlutterMateApp());
 }

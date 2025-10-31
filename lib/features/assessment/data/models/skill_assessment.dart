@@ -62,13 +62,17 @@ class SkillAssessment {
     return skills[category] ?? SkillLevel.beginner;
   }
 
-  // Convert to Firestore Map
-  Map<String, dynamic> toMap() {
+  // Convert to Map
+  // forFirestore: true = use Timestamp (for Firestore)
+  // forFirestore: false = use ISO string (for Hive/JSON)
+  Map<String, dynamic> toMap({bool forFirestore = true}) {
     return {
       'id': id,
       'userId': userId,
       'skills': skills.map((key, value) => MapEntry(key, value.name)),
-      'completedAt': Timestamp.fromDate(completedAt),
+      'completedAt': forFirestore
+          ? Timestamp.fromDate(completedAt)
+          : completedAt.toIso8601String(),
       'totalScore': totalScore,
       'maxScore': maxScore,
       'categoryScores': categoryScores,
@@ -99,13 +103,25 @@ class SkillAssessment {
       ),
     );
 
+    // Helper function to parse DateTime from various formats
+    DateTime parseDateTime(dynamic value) {
+      if (value is Timestamp) {
+        return value.toDate();
+      } else if (value is DateTime) {
+        return value;
+      } else if (value is String) {
+        return DateTime.parse(value);
+      } else if (value is int) {
+        return DateTime.fromMillisecondsSinceEpoch(value);
+      }
+      return DateTime.now();
+    }
+
     return SkillAssessment(
       id: map['id'] ?? '',
       userId: map['userId'] ?? '',
       skills: skillsMap,
-      completedAt: map['completedAt'] is Timestamp
-          ? (map['completedAt'] as Timestamp).toDate()
-          : DateTime.now(),
+      completedAt: parseDateTime(map['completedAt']),
       totalScore: map['totalScore'] ?? 0,
       maxScore: map['maxScore'] ?? 0,
       categoryScores: Map<String, int>.from(map['categoryScores'] ?? {}),

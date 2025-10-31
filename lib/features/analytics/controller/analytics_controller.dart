@@ -44,8 +44,13 @@ class AnalyticsController extends GetxController {
       final authController = Get.find<AuthController>();
       final userId = authController.currentUser.value?.id;
 
+      // Analytics requires authentication (not available for guests)
       if (userId == null || authController.isGuest) {
         isLoading.value = false;
+        timeAnalytics.value = null;
+        productivityMetrics.value = null;
+        recentSessions.clear();
+        personalizedInsights.clear();
         return;
       }
 

@@ -37,11 +37,13 @@ class ProgressTrackerBinding extends Bindings {
       );
     }
 
-    Get.lazyPut<ProgressTrackerController>(
-      () => ProgressTrackerController(
-        roadmapController: Get.find<RoadmapController>(),
-        lessonController: Get.find<LessonController>(),
-      ),
-    );
+    if (!Get.isRegistered<ProgressTrackerController>()) {
+      Get.lazyPut<ProgressTrackerController>(
+        () => ProgressTrackerController(
+          roadmapController: Get.find<RoadmapController>(),
+          lessonController: Get.find<LessonController>(),
+        ),
+      );
+    }
   }
 }

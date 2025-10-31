@@ -24,4 +24,10 @@ class AppRoutes {
   static const String analyticsDashboard = '/analytics-dashboard';
   static const String skillAssessment = '/skill-assessment';
   static const String assessmentResults = '/assessment-results';
+  static const String assessmentHistory = '/assessment-history';
+
+  // Roadmap detail routes
+  static const String stageDetail = '/stage-detail';
+  static const String lessons = '/lessons';
+  static const String lessonDetail = '/lesson-detail';
 }

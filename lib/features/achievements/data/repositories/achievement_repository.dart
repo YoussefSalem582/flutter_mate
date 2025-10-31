@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hive/hive.dart';
 import '../models/achievement.dart';
 
@@ -7,13 +9,26 @@ abstract class AchievementRepository {
   Future<Map<String, AchievementProgress>> getUserProgress();
   Future<void> updateProgress(String achievementId, int progress);
   Future<void> unlockAchievement(String achievementId);
+  Future<void> syncToCloud();
+  Future<void> syncFromCloud();
 }
 
 class AchievementRepositoryImpl implements AchievementRepository {
   static const _progressKey = 'achievement_progress';
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Hive box getter for achievements (reuse progress box)
   Box get _box => Hive.box('progress');
+
+  /// Get current user ID
+  String? get _userId => _auth.currentUser?.uid;
+
+  /// Check if user is authenticated (not guest)
+  bool get _isAuthenticated {
+    final user = _auth.currentUser;
+    return user != null && !user.isAnonymous;
+  }
 
   AchievementRepositoryImpl();
 
@@ -94,6 +109,62 @@ class AchievementRepositoryImpl implements AchievementRepository {
       requiredProgress: 7,
       category: 'streak',
       xpReward: 400,
+    ),
+
+    // Skill Assessment Achievements
+    Achievement(
+      id: 'first_assessment',
+      title: '📊 First Assessment',
+      description: 'Complete your first skill assessment',
+      icon: '📊',
+      requiredProgress: 1,
+      category: 'assessment',
+      xpReward: 100,
+    ),
+    Achievement(
+      id: 'assessment_intermediate',
+      title: '📈 Intermediate Skills',
+      description: 'Reach Intermediate level in assessment',
+      icon: '📈',
+      requiredProgress: 1,
+      category: 'assessment',
+      xpReward: 200,
+    ),
+    Achievement(
+      id: 'assessment_advanced',
+      title: '🚀 Advanced Developer',
+      description: 'Reach Advanced level in assessment',
+      icon: '🚀',
+      requiredProgress: 1,
+      category: 'assessment',
+      xpReward: 300,
+    ),
+    Achievement(
+      id: 'assessment_expert',
+      title: '💎 Flutter Expert',
+      description: 'Reach Expert level in assessment',
+      icon: '💎',
+      requiredProgress: 1,
+      category: 'assessment',
+      xpReward: 500,
+    ),
+    Achievement(
+      id: 'assessment_perfect',
+      title: '🏆 Perfect Assessment',
+      description: 'Score 100% on skill assessment',
+      icon: '🏆',
+      requiredProgress: 1,
+      category: 'assessment',
+      xpReward: 400,
+    ),
+    Achievement(
+      id: 'assessment_master',
+      title: '👑 Assessment Master',
+      description: 'Complete 10 skill assessments',
+      icon: '👑',
+      requiredProgress: 10,
+      category: 'assessment',
+      xpReward: 600,
     ),
 
     // Special Achievements
@@ -189,9 +260,136 @@ class AchievementRepositoryImpl implements AchievementRepository {
   }
 
   Future<void> _saveProgress(Map<String, AchievementProgress> progress) async {
+    // Save to Hive first (always succeeds, works offline)
     final json = jsonEncode(
       progress.map((key, value) => MapEntry(key, value.toJson())),
     );
     await _box.put(_progressKey, json);
+
+    // Sync to Firestore (if authenticated)
+    if (_isAuthenticated) {
+      try {
+        await syncToCloud();
+      } catch (e) {
+        print('Could not sync achievements to cloud: $e');
+        // Continue anyway - local save succeeded
+      }
+    }
+  }
+
+  /// Sync achievements progress to Firestore
+  @override
+  Future<void> syncToCloud() async {
+    if (!_isAuthenticated || _userId == null) return;
+
+    try {
+      // Get local data from Hive
+      final progressJson = _box.get(_progressKey) as String?;
+      if (progressJson == null) return;
+
+      final progressMap = Map<String, dynamic>.from(jsonDecode(progressJson));
+
+      // Save to Firestore
+      final achievementsDoc = _firestore
+          .collection('users')
+          .doc(_userId)
+          .collection('achievements')
+          .doc('progress');
+
+      await achievementsDoc.set({
+        'progress': progressMap,
+        'lastUpdated': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      print('✅ Achievements synced to cloud successfully');
+    } catch (e) {
+      print('❌ Error syncing achievements to cloud: $e');
+      rethrow;
+    }
+  }
+
+  /// Sync achievements progress from Firestore
+  @override
+  Future<void> syncFromCloud() async {
+    if (!_isAuthenticated || _userId == null) return;
+
+    try {
+      // Get user's achievements document
+      final achievementsDoc = await _firestore
+          .collection('users')
+          .doc(_userId)
+          .collection('achievements')
+          .doc('progress')
+          .get();
+
+      if (achievementsDoc.exists) {
+        final data = achievementsDoc.data()!;
+        final cloudProgressMap =
+            Map<String, dynamic>.from(data['progress'] ?? {});
+
+        // Get local data
+        final localProgressJson = _box.get(_progressKey) as String?;
+        final localProgressMap = localProgressJson != null
+            ? Map<String, dynamic>.from(jsonDecode(localProgressJson))
+            : <String, dynamic>{};
+
+        // Merge progress: prefer more recent unlock dates, higher progress values
+        final mergedMap = <String, dynamic>{...localProgressMap};
+
+        for (final entry in cloudProgressMap.entries) {
+          final cloudProgress = AchievementProgress.fromJson(
+            Map<String, dynamic>.from(entry.value),
+          );
+
+          if (!mergedMap.containsKey(entry.key)) {
+            // New achievement from cloud
+            mergedMap[entry.key] = entry.value;
+          } else {
+            // Merge existing achievement
+            final localProgress = AchievementProgress.fromJson(
+              Map<String, dynamic>.from(mergedMap[entry.key]),
+            );
+
+            // Use higher progress and earlier unlock date
+            final merged = AchievementProgress(
+              achievementId: entry.key,
+              currentProgress:
+                  cloudProgress.currentProgress > localProgress.currentProgress
+                      ? cloudProgress.currentProgress
+                      : localProgress.currentProgress,
+              isUnlocked: cloudProgress.isUnlocked || localProgress.isUnlocked,
+              unlockedAt: _getEarlierDate(
+                  cloudProgress.unlockedAt, localProgress.unlockedAt),
+            );
+
+            mergedMap[entry.key] = merged.toJson();
+          }
+        }
+
+        // Save merged data to Hive
+        final mergedJson = jsonEncode(mergedMap);
+        await _box.put(_progressKey, mergedJson);
+
+        // If merged data is different, sync back to cloud
+        if (mergedJson != jsonEncode(cloudProgressMap)) {
+          await syncToCloud();
+        }
+
+        print('✅ Achievements synced from cloud successfully');
+      } else {
+        // No cloud data exists, sync local data to cloud
+        await syncToCloud();
+      }
+    } catch (e) {
+      print('❌ Error syncing achievements from cloud: $e');
+      rethrow;
+    }
+  }
+
+  /// Helper to get earlier of two dates
+  DateTime? _getEarlierDate(DateTime? date1, DateTime? date2) {
+    if (date1 == null) return date2;
+    if (date2 == null) return date1;
+    return date1.isBefore(date2) ? date1 : date2;
   }
 }

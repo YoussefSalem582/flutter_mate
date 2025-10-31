@@ -1,4 +1,21 @@
 rules_version = '2';
+
+// ============================================
+// FlutterMate Firestore Security Rules
+// ============================================
+//
+// This file defines access control rules for all Firestore collections.
+// 
+// IMPORTANT INDEXES REQUIRED:
+// - skill_assessments: userId (ASC) + completedAt (DESC)
+// - study_sessions: userId (ASC) + startTime (DESC)
+// - quiz_results: userId (ASC) + completedAt (DESC)
+//
+// To create these indexes, visit:
+// https://console.firebase.google.com/project/_/firestore/indexes
+// Or click the link in the error message when running the app
+// ============================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
     
@@ -19,6 +36,11 @@ service cloud.firestore {
     /// Check if user is authenticated (not anonymous/guest)
     function isVerifiedUser() {
       return isAuthenticated() && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+    
+    /// Validate that the userId in the document matches the authenticated user
+    function isValidUserDocument() {
+      return request.resource.data.userId == request.auth.uid;
     }
     
     // ============================================
@@ -63,7 +85,7 @@ service cloud.firestore {
       // All authenticated users can read lessons
       allow read: if isAuthenticated();
       
-      // Only admins can write (handle this via Admin SDK or specific admin role)
+      // Only admins can write (handle this via Admin SDK)
       allow write: if false;
     }
     
@@ -98,12 +120,13 @@ service cloud.firestore {
     // ============================================
     // Quiz Results Collection (Top Level)
     // ============================================
+    // INDEX REQUIRED: userId (ASC) + completedAt (DESC)
     match /quiz_results/{resultId} {
       // Users can read their own quiz results
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       
       // Users can create quiz results with their own userId
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidUserDocument();
       
       // Users can update/delete their own quiz results
       allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
@@ -116,19 +139,23 @@ service cloud.firestore {
       // All authenticated users can read assessment questions
       allow read: if isAuthenticated();
       
-      // Only admins can write (set manually in Firebase Console)
+      // Only admins can write (set manually in Firebase Console or Admin SDK)
       allow write: if false;
     }
     
     // ============================================
     // Skill Assessments Collection
     // ============================================
+    // INDEX REQUIRED: userId (ASC) + completedAt (DESC)
+    // This index is needed for fetching user's assessment history sorted by date
     match /skill_assessments/{assessmentId} {
       // Users can read their own skill assessments
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // Allow both single reads and queries filtered by userId
+      allow read: if isAuthenticated() && 
+                     (resource == null || resource.data.userId == request.auth.uid);
       
       // Users can create assessments with their own userId
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidUserDocument();
       
       // Users can update/delete their own assessments
       allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
@@ -178,8 +205,35 @@ service cloud.firestore {
       // All authenticated users can read roadmap stages
       allow read: if isAuthenticated();
       
-      // Only admins can write
+      // Only admins can write (via Admin SDK)
       allow write: if false;
+      
+      // Stage Lessons Subcollection
+      match /lessons/{lessonId} {
+        allow read: if isAuthenticated();
+        allow write: if false;
+      }
+    }
+    
+    // ============================================
+    // Study Timer Sessions Collection
+    // ============================================
+    // INDEX REQUIRED: userId (ASC) + startTime (DESC)
+    // This index is needed for analytics dashboard to fetch and sort sessions
+    match /study_sessions/{sessionId} {
+      // Users can read their own study sessions
+      // Allow both single reads and queries filtered by userId
+      allow read: if isAuthenticated() && 
+                     (resource == null || resource.data.userId == request.auth.uid);
+      
+      // Users can create sessions with their own userId
+      allow create: if isAuthenticated() && isValidUserDocument();
+      
+      // Users can update their own sessions (for ending active sessions)
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Users can delete their own sessions
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
     
     // ============================================
@@ -190,7 +244,7 @@ service cloud.firestore {
       allow read: if true;
       
       // Only authenticated (non-guest) users can create posts
-      allow create: if isVerifiedUser();
+      allow create: if isVerifiedUser() && isValidUserDocument();
       
       // Users can update/delete their own posts
       allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
@@ -198,7 +252,7 @@ service cloud.firestore {
       // Comments Subcollection
       match /comments/{commentId} {
         allow read: if true;
-        allow create: if isVerifiedUser();
+        allow create: if isVerifiedUser() && isValidUserDocument();
         allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
       }
     }
@@ -215,20 +269,6 @@ service cloud.firestore {
     }
     
     // ============================================
-    // Study Timer Sessions Collection
-    // ============================================
-    match /study_sessions/{sessionId} {
-      // Users can read their own study sessions
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      
-      // Users can create sessions with their own userId
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      
-      // Users can update/delete their own sessions
-      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-    }
-    
-    // ============================================
     // Code Playground Projects Collection
     // ============================================
     match /code_projects/{projectId} {
@@ -237,7 +277,7 @@ service cloud.firestore {
                      (isAuthenticated() && resource.data.userId == request.auth.uid);
       
       // Users can create projects with their own userId
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidUserDocument();
       
       // Users can update/delete their own projects
       allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
@@ -281,7 +321,7 @@ service cloud.firestore {
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       
       // Any authenticated user can submit feedback
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidUserDocument();
       
       // Users cannot update/delete feedback once submitted
       allow update, delete: if false;
@@ -295,3 +335,4 @@ service cloud.firestore {
     }
   }
 }
+

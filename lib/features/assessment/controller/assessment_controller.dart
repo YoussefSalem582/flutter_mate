@@ -6,6 +6,8 @@ import '../data/models/skill_level.dart';
 import '../data/repositories/assessment_repository.dart';
 import '../../auth/controller/auth_controller.dart';
 import '../../analytics/controller/analytics_controller.dart';
+import '../../achievements/controller/achievement_controller.dart';
+import '../../../core/routes/app_routes.dart';
 
 class AssessmentController extends GetxController {
   final AssessmentRepository _repository = AssessmentRepository();
@@ -27,6 +29,9 @@ class AssessmentController extends GetxController {
   final RxMap<String, int> userAnswers = <String, int>{}.obs;
   final RxMap<String, int> categoryScores = <String, int>{}.obs;
   final RxMap<String, int> categoryMaxScores = <String, int>{}.obs;
+
+  // Assessment history
+  final RxList<SkillAssessment> assessments = <SkillAssessment>[].obs;
 
   @override
   void onInit() {
@@ -59,6 +64,21 @@ class AssessmentController extends GetxController {
           await _repository.getUserLatestAssessment(userId);
     } catch (e) {
       print('Failed to load latest assessment: $e');
+    }
+  }
+
+  /// Load all user assessments (for history page)
+  Future<void> loadUserAssessments() async {
+    try {
+      final userId = _authController.currentUser.value?.id;
+      if (userId == null) return;
+
+      isLoading.value = true;
+      assessments.value = await _repository.getUserAssessments(userId);
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load assessment history: $e');
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -100,7 +120,7 @@ class AssessmentController extends GetxController {
     // Initialize category tracking
     for (var question in selectedQuestions) {
       categoryMaxScores[question.category] =
-          (categoryMaxScores[question.category] ?? 0) + question.points;
+          (categoryMaxScores[question.category] ?? 0) + question.xp;
     }
 
     // Start timer
@@ -112,7 +132,7 @@ class AssessmentController extends GetxController {
     }
   }
 
-  /// Select diverse questions across categories and difficulties
+  /// Select diverse questions across categories and difficulties with improved randomization
   List<AssessmentQuestion> _selectDiverseQuestions(int count) {
     final questions = <AssessmentQuestion>[];
 
@@ -121,28 +141,35 @@ class AssessmentController extends GetxController {
       return questions;
     }
 
-    final categories = <String>{};
+    // Create a deep copy and shuffle all questions first for better randomization
+    final shuffledAllQuestions = List<AssessmentQuestion>.from(allQuestions)
+      ..shuffle();
 
     // Group questions by category
     final questionsByCategory = <String, List<AssessmentQuestion>>{};
-    for (var q in allQuestions) {
+    for (var q in shuffledAllQuestions) {
       questionsByCategory.putIfAbsent(q.category, () => []).add(q);
-      categories.add(q.category);
     }
+
+    final categories = questionsByCategory.keys.toList();
 
     // Return empty list if no categories
     if (categories.isEmpty) {
       return questions;
     }
 
-    // Calculate questions per category
-    final questionsPerCategory = (count / categories.length).ceil();
+    // Shuffle categories for variety
+    categories.shuffle();
 
-    // Select questions from each category
+    // Calculate questions per category (ensure minimum 1 per category)
+    final questionsPerCategory =
+        (count / categories.length).ceil().clamp(1, count);
+
+    // Select questions from each category with balanced difficulty
     for (var category in categories) {
       final categoryQuestions = questionsByCategory[category]!;
 
-      // Get mix of difficulties
+      // Group by difficulty
       final easy =
           categoryQuestions.where((q) => q.difficulty == 'easy').toList();
       final medium =
@@ -150,33 +177,46 @@ class AssessmentController extends GetxController {
       final hard =
           categoryQuestions.where((q) => q.difficulty == 'hard').toList();
 
-      // Shuffle each difficulty level
+      // Shuffle each difficulty level again
       easy.shuffle();
       medium.shuffle();
       hard.shuffle();
 
-      // Take proportional questions from each difficulty
+      // Improved difficulty distribution: 40% easy, 40% medium, 20% hard
       final categorySelection = <AssessmentQuestion>[];
       final easyCount =
-          (questionsPerCategory * 0.4).ceil().clamp(0, easy.length);
+          (questionsPerCategory * 0.40).ceil().clamp(0, easy.length);
       final mediumCount =
-          (questionsPerCategory * 0.4).ceil().clamp(0, medium.length);
-      final hardCount = (questionsPerCategory - easyCount - mediumCount)
-          .clamp(0, hard.length);
+          (questionsPerCategory * 0.40).ceil().clamp(0, medium.length);
+      final hardCount =
+          (questionsPerCategory * 0.20).ceil().clamp(0, hard.length);
 
+      // Add questions from each difficulty
       categorySelection.addAll(easy.take(easyCount));
       categorySelection.addAll(medium.take(mediumCount));
       categorySelection.addAll(hard.take(hardCount));
 
+      // If we still need more questions, fill from remaining
+      if (categorySelection.length < questionsPerCategory) {
+        final remaining = categoryQuestions
+            .where((q) => !categorySelection.contains(q))
+            .toList()
+          ..shuffle();
+        final needed = questionsPerCategory - categorySelection.length;
+        categorySelection.addAll(remaining.take(needed));
+      }
+
       questions.addAll(categorySelection.take(questionsPerCategory));
     }
 
-    // Shuffle final selection
+    // Final shuffle for better question flow
     questions.shuffle();
+
+    // Ensure we don't exceed the requested count
     return questions.take(count.clamp(0, questions.length)).toList();
   }
 
-  /// Answer current question
+  /// Answer current question (no auto-advance)
   void answerQuestion(int answerIndex) {
     if (currentQuestionIndex.value >= selectedQuestions.length) return;
 
@@ -188,14 +228,18 @@ class AssessmentController extends GetxController {
     // Check if correct
     if (question.isCorrect(answerIndex)) {
       correctAnswers.value++;
-      score.value += question.points;
+      score.value += question.xp;
 
       // Track category score
       categoryScores[question.category] =
-          (categoryScores[question.category] ?? 0) + question.points;
+          (categoryScores[question.category] ?? 0) + question.xp;
     }
 
-    // Move to next question or finish
+    // Don't auto-advance - let user click Next button
+  }
+
+  /// Move to next question
+  void nextQuestion() {
     if (currentQuestionIndex.value < selectedQuestions.length - 1) {
       currentQuestionIndex.value++;
     } else {
@@ -228,7 +272,7 @@ class AssessmentController extends GetxController {
 
     // Calculate total max score
     final totalMaxScore =
-        selectedQuestions.fold<int>(0, (sum, q) => sum + q.points);
+        selectedQuestions.fold<int>(0, (sum, q) => sum + q.xp);
 
     // Calculate skill levels per category
     final skills = <String, SkillLevel>{};
@@ -275,6 +319,60 @@ class AssessmentController extends GetxController {
       await _repository.saveAssessment(assessment);
       latestAssessment.value = assessment;
 
+      // Add to assessments list (for history page)
+      assessments.insert(0, assessment);
+
+      // Calculate XP reward based on score
+      final scorePercentage = (score.value / totalMaxScore) * 100;
+      int xpReward = 0;
+      if (scorePercentage >= 90) {
+        xpReward = 500; // Expert performance
+      } else if (scorePercentage >= 75) {
+        xpReward = 300; // Great performance
+      } else if (scorePercentage >= 60) {
+        xpReward = 200; // Good performance
+      } else {
+        xpReward = 100; // Participation reward
+      }
+
+      // Track achievements
+      try {
+        final achievementController = Get.find<AchievementController>();
+        
+        // Get the highest skill level achieved
+        String highestSkillLevel = 'Beginner';
+        for (var skillLevel in skills.values) {
+          if (skillLevel == SkillLevel.expert) {
+            highestSkillLevel = 'Expert';
+            break;
+          } else if (skillLevel == SkillLevel.advanced && highestSkillLevel != 'Expert') {
+            highestSkillLevel = 'Advanced';
+          } else if (skillLevel == SkillLevel.intermediate && 
+                     highestSkillLevel != 'Advanced' && 
+                     highestSkillLevel != 'Expert') {
+            highestSkillLevel = 'Intermediate';
+          }
+        }
+        
+        await achievementController.onAssessmentCompleted(
+          skillLevel: highestSkillLevel,
+          score: score.value,
+          maxScore: totalMaxScore,
+        );
+        
+        // Show XP gained notification
+        Get.snackbar(
+          '✨ Assessment Complete!',
+          '+$xpReward XP earned',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      } catch (e) {
+        print('Achievement controller not found: $e');
+      }
+
       // Update analytics - refresh to include new assessment data
       try {
         final analyticsController = Get.find<AnalyticsController>();
@@ -284,7 +382,7 @@ class AssessmentController extends GetxController {
       }
 
       // Navigate to results
-      Get.offNamed('/assessment-results', arguments: assessment);
+      Get.offNamed(AppRoutes.assessmentResults, arguments: assessment);
     } catch (e) {
       Get.snackbar('Error', 'Failed to save assessment: $e');
     }

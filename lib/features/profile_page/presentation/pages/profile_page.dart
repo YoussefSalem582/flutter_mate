@@ -98,6 +98,95 @@ class ProfilePage extends GetView<ProgressTrackerController> {
     Get.dialog(const ProfileEditDialog());
   }
 
+  /// Navigates to assessment history
+  ///
+  /// Flow:
+  /// 1. Checks if user is authenticated using [AuthUtils.requireAuth]
+  /// 2. If guest user, shows authentication prompt
+  /// 3. If authenticated, navigates to assessment history page
+  void _navigateToAssessmentHistory() {
+    if (!AuthUtils.requireAuth(
+      title: 'Assessment History',
+      message:
+          'Sign in to view your assessment history and track your skill progress over time.',
+    )) {
+      return;
+    }
+    Get.toNamed(AppRoutes.assessmentHistory);
+  }
+
+  /// Builds the assessment history button widget
+  Widget _buildAssessmentHistoryButton(
+    BuildContext context,
+    bool isDark,
+    AuthController authController,
+  ) {
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: _navigateToAssessmentHistory,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              // Icon container
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.purple.withOpacity(0.2),
+                      Colors.deepPurple.withOpacity(0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.history_edu,
+                  size: 32,
+                  color: Colors.deepPurple,
+                ),
+              ),
+              const SizedBox(width: 16),
+
+              // Text content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Assessment History',
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'View your past assessments and track progress',
+                      style: AppTextStyles.caption.copyWith(
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Arrow icon
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Get required dependencies
@@ -210,6 +299,13 @@ class ProfilePage extends GetView<ProgressTrackerController> {
           cardHeight: 140,
           isDark: isDark,
         ).animate().fadeIn(delay: 500.ms).slideX(begin: -0.2),
+        const SizedBox(height: 16),
+
+        // Assessment History Button
+        _buildAssessmentHistoryButton(context, isDark, authController)
+            .animate()
+            .fadeIn(delay: 550.ms)
+            .slideX(begin: 0.2),
         const SizedBox(height: 24),
 
         // Learning preferences section
@@ -340,6 +436,26 @@ class ProfilePage extends GetView<ProgressTrackerController> {
                     ProfileStatsGrid(isDark: isDark)
                         .animate()
                         .fadeIn(delay: 400.ms)
+                        .slideX(begin: -0.2),
+                    const SizedBox(height: 24),
+
+                    // Advanced Features section
+                    Text('Advanced Features',
+                            style: AppTextStyles.h3.copyWith(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color,
+                                fontWeight: FontWeight.bold))
+                        .animate()
+                        .fadeIn(delay: 450.ms),
+                    const SizedBox(height: 16),
+
+                    // Assessment History Button
+                    _buildAssessmentHistoryButton(
+                            context, isDark, authController)
+                        .animate()
+                        .fadeIn(delay: 500.ms)
                         .slideX(begin: -0.2),
                     const SizedBox(height: 32),
 

@@ -5,7 +5,7 @@ class AssessmentQuestion {
   final String question;
   final List<String> options;
   final int correctAnswer; // Index of correct option
-  final int points;
+  final int xp; // XP reward for correct answer
   final String? explanation; // Optional explanation for correct answer
   final List<String> tags; // Related topics
 
@@ -16,7 +16,7 @@ class AssessmentQuestion {
     required this.question,
     required this.options,
     required this.correctAnswer,
-    required this.points,
+    required this.xp,
     this.explanation,
     this.tags = const [],
   });
@@ -30,7 +30,7 @@ class AssessmentQuestion {
       'question': question,
       'options': options,
       'correctAnswer': correctAnswer,
-      'points': points,
+      'xp': xp,
       'explanation': explanation,
       'tags': tags,
     };
@@ -45,7 +45,9 @@ class AssessmentQuestion {
       question: map['question'] ?? '',
       options: List<String>.from(map['options'] ?? []),
       correctAnswer: map['correctAnswer'] ?? 0,
-      points: map['points'] ?? 1,
+      xp: map['xp'] ??
+          map['points'] ??
+          1, // Support both xp and old points field
       explanation: map['explanation'],
       tags: List<String>.from(map['tags'] ?? []),
     );
@@ -60,23 +62,25 @@ class AssessmentQuestion {
       question: json['question'] ?? '',
       options: List<String>.from(json['options'] ?? []),
       correctAnswer: json['correctAnswer'] ?? 0,
-      points: json['points'] ?? 1,
+      xp: json['xp'] ??
+          json['points'] ??
+          1, // Support both xp and old points field
       explanation: json['explanation'],
       tags: List<String>.from(json['tags'] ?? []),
     );
   }
 
-  // Helper: Get points based on difficulty
-  static int getPointsForDifficulty(String difficulty) {
+  // Helper: Get XP based on difficulty
+  static int getXPForDifficulty(String difficulty) {
     switch (difficulty.toLowerCase()) {
       case 'easy':
-        return 1;
+        return 10;
       case 'medium':
-        return 2;
+        return 20;
       case 'hard':
-        return 3;
+        return 30;
       default:
-        return 1;
+        return 10;
     }
   }
 
@@ -92,7 +96,7 @@ class AssessmentQuestion {
     String? question,
     List<String>? options,
     int? correctAnswer,
-    int? points,
+    int? xp,
     String? explanation,
     List<String>? tags,
   }) {
@@ -103,7 +107,7 @@ class AssessmentQuestion {
       question: question ?? this.question,
       options: options ?? this.options,
       correctAnswer: correctAnswer ?? this.correctAnswer,
-      points: points ?? this.points,
+      xp: xp ?? this.xp,
       explanation: explanation ?? this.explanation,
       tags: tags ?? this.tags,
     );

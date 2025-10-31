@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import '../data/models/quiz_question.dart';
 import '../services/quiz_tracking_service.dart';
+import 'package:flutter_mate/features/analytics/controller/analytics_controller.dart';
 
 /// Controller for managing quiz state and logic
 class QuizController extends GetxController {
@@ -24,9 +25,32 @@ class QuizController extends GetxController {
     final args = Get.arguments;
     if (args != null && args is Map && args.containsKey('lessonId')) {
       loadQuizForLesson(args['lessonId'] as String);
+
+      // Start analytics tracking for quiz session
+      _startQuizTracking();
     } else {
       // Load all questions if no specific lesson
       questions.value = allQuestions;
+    }
+  }
+
+  /// Start tracking quiz as a study session
+  void _startQuizTracking() {
+    try {
+      final analyticsController = Get.find<AnalyticsController>();
+      if (currentLessonId.value.isNotEmpty) {
+        // Use lesson ID as title for now (lesson controller can provide better title)
+        final lessonTitle = 'Quiz: ${currentLessonId.value}';
+
+        analyticsController.startStudySession(
+          lessonId: currentLessonId.value,
+          lessonTitle: lessonTitle,
+          category: 'Quiz',
+        );
+        print('📊 Started analytics tracking for quiz: $lessonTitle');
+      }
+    } catch (e) {
+      print('Analytics not available for quiz: $e');
     }
   }
 
@@ -1145,7 +1169,30 @@ class QuizController extends GetxController {
         correctAnswers: correctAnswersCount,
         totalQuestions: totalQuestions,
       );
+
+      // End analytics tracking for quiz session
+      _endQuizTracking(completed: true);
     }
+  }
+
+  /// End tracking quiz session
+  Future<void> _endQuizTracking({required bool completed}) async {
+    try {
+      final analyticsController = Get.find<AnalyticsController>();
+      await analyticsController.endStudySession(completed: completed);
+      print('📊 Ended analytics tracking for quiz (completed: $completed)');
+    } catch (e) {
+      print('Analytics not available for quiz end: $e');
+    }
+  }
+
+  @override
+  void onClose() {
+    // End session if quiz is exited without completion
+    if (!isCompleted.value && currentLessonId.value.isNotEmpty) {
+      _endQuizTracking(completed: false);
+    }
+    super.onClose();
   }
 
   void restartQuiz() {

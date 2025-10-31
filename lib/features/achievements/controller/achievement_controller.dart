@@ -158,4 +158,32 @@ class AchievementController extends GetxController {
       1.0,
     );
   }
+
+  /// Handle skill assessment completion
+  Future<void> onAssessmentCompleted({
+    required String skillLevel,
+    required int score,
+    required int maxScore,
+  }) async {
+    // Track first assessment
+    await incrementProgress('first_assessment');
+    
+    // Track overall assessments count
+    await incrementProgress('assessment_master');
+    
+    // Check for perfect score
+    if (score == maxScore) {
+      await unlock('assessment_perfect');
+    }
+    
+    // Track skill level achievements
+    final skillLevelLower = skillLevel.toLowerCase();
+    if (skillLevelLower.contains('intermediate')) {
+      await unlock('assessment_intermediate');
+    } else if (skillLevelLower.contains('advanced')) {
+      await unlock('assessment_advanced');
+    } else if (skillLevelLower.contains('expert')) {
+      await unlock('assessment_expert');
+    }
+  }
 }

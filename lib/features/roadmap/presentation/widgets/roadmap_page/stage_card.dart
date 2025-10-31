@@ -63,8 +63,8 @@ class StageCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // Navigate to lessons without auth check
-            Get.toNamed('/lessons', arguments: stage);
+            // Navigate to stage detail page
+            Get.toNamed('/stage-detail', arguments: stage);
           },
           borderRadius: BorderRadius.circular(20),
           child: Padding(

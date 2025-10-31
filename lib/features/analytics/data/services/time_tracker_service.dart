@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_mate/features/analytics/data/models/study_session.dart';
 import 'package:flutter_mate/features/analytics/data/models/time_analytics.dart';
 
@@ -6,11 +7,15 @@ import 'package:flutter_mate/features/analytics/data/models/time_analytics.dart'
 ///
 /// Responsibilities:
 /// - Start/stop study sessions
-/// - Save session data to Firestore
+/// - Save session data locally (Hive) and to Firestore
 /// - Calculate analytics from session data
 /// - Track streaks and consistency
+/// - Works offline-first with optional cloud sync
 class TimeTrackerService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  /// Get Hive box for local storage
+  Box get _box => Hive.box('quiz'); // Reuse quiz box
 
   /// Currently active study session
   StudySession? _currentSession;
@@ -55,26 +60,62 @@ class TimeTrackerService {
       completed: completed,
     );
 
-    // Save to Firestore
+    // Save to local storage first (always succeeds, works offline)
+    try {
+      final sessionData =
+          session.toMap(forFirestore: false); // Use ISO strings for Hive
+      final sessionKey = 'session_${session.id}';
+      await _box.put(sessionKey, sessionData);
+    } catch (e) {
+      print('Error saving session to local storage: $e');
+    }
+
+    // Try to save to Firestore (requires internet and auth)
     try {
       await _firestore
           .collection('study_sessions')
           .doc(session.id)
-          .set(session.toMap());
+          .set(session.toMap(forFirestore: true)); // Explicit Timestamp format
+    } catch (e) {
+      print('Error syncing session to Firestore: $e');
+      // Continue anyway - local storage succeeded
+    }
 
       _currentSession = null;
       return session;
-    } catch (e) {
-      print('Error saving study session: $e');
-      return null;
-    }
   }
 
   /// Get current active session
   StudySession? getCurrentSession() => _currentSession;
 
-  /// Get all sessions for a user
+  /// Get all sessions for a user (from Hive cache first, then Firestore)
   Future<List<StudySession>> getUserSessions(String userId) async {
+    List<StudySession> sessions = [];
+
+    // First, load from local cache (fast, works offline)
+    try {
+      final allKeys =
+          _box.keys.where((key) => key.toString().startsWith('session_'));
+
+      for (final key in allKeys) {
+        final data = _box.get(key);
+        if (data is Map) {
+          try {
+            final session =
+                StudySession.fromMap(Map<String, dynamic>.from(data));
+            if (session.userId == userId) {
+              sessions.add(session);
+            }
+          } catch (e) {
+            print('Error parsing cached session: $e');
+          }
+        }
+      }
+    } catch (e) {
+      print('Error loading cached sessions: $e');
+    }
+
+    // Then, try to sync with Firestore (online only)
     try {
       final snapshot = await _firestore
           .collection('study_sessions')
@@ -82,13 +123,29 @@ class TimeTrackerService {
           .orderBy('startTime', descending: true)
           .get();
 
-      return snapshot.docs
-          .map((doc) => StudySession.fromFirestore(doc))
-          .toList();
+      final firestoreSessions =
+          snapshot.docs.map((doc) => StudySession.fromFirestore(doc)).toList();
+
+      // Merge: prefer Firestore data, add local-only sessions
+      final sessionIds = firestoreSessions.map((s) => s.id).toSet();
+      final localOnlySessions =
+          sessions.where((s) => !sessionIds.contains(s.id)).toList();
+
+      sessions = [...firestoreSessions, ...localOnlySessions];
+
+      // Cache Firestore sessions locally
+      for (final session in firestoreSessions) {
+        final sessionKey = 'session_${session.id}';
+        await _box.put(sessionKey, session.toMap(forFirestore: false));
+      }
     } catch (e) {
-      print('Error fetching study sessions: $e');
-      return [];
+      print('Error syncing with Firestore (using cached data): $e');
+      // Continue with cached sessions
     }
+
+    // Sort by date (most recent first)
+    sessions.sort((a, b) => b.startTime.compareTo(a.startTime));
+    return sessions;
   }
 
   /// Get sessions within a date range

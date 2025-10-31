@@ -39,16 +39,20 @@ class StudySession {
   /// Get duration in seconds
   int get durationInSeconds => duration.inSeconds;
 
-  /// Convert to Firestore map
-  Map<String, dynamic> toMap() {
+  /// Convert to map (for both Firestore and local storage)
+  Map<String, dynamic> toMap({bool forFirestore = true}) {
     return {
       'id': id,
       'userId': userId,
       'lessonId': lessonId,
       'lessonTitle': lessonTitle,
       'category': category,
-      'startTime': Timestamp.fromDate(startTime),
-      'endTime': Timestamp.fromDate(endTime),
+      'startTime': forFirestore
+          ? Timestamp.fromDate(startTime)
+          : startTime.toIso8601String(),
+      'endTime': forFirestore
+          ? Timestamp.fromDate(endTime)
+          : endTime.toIso8601String(),
       'completed': completed,
       'activities': activities,
       'durationInSeconds': durationInSeconds,
@@ -71,16 +75,29 @@ class StudySession {
     );
   }
 
-  /// Create from map (for local storage)
+  /// Create from map (for local storage - handles both Timestamp and DateTime)
   factory StudySession.fromMap(Map<String, dynamic> map) {
+    DateTime parseDateTime(dynamic value) {
+      if (value is Timestamp) {
+        return value.toDate();
+      } else if (value is DateTime) {
+        return value;
+      } else if (value is String) {
+        return DateTime.parse(value);
+      } else if (value is int) {
+        return DateTime.fromMillisecondsSinceEpoch(value);
+      }
+      return DateTime.now();
+    }
+
     return StudySession(
       id: map['id'] ?? '',
       userId: map['userId'] ?? '',
       lessonId: map['lessonId'] ?? '',
       lessonTitle: map['lessonTitle'] ?? '',
       category: map['category'] ?? '',
-      startTime: DateTime.parse(map['startTime']),
-      endTime: DateTime.parse(map['endTime']),
+      startTime: parseDateTime(map['startTime']),
+      endTime: parseDateTime(map['endTime']),
       completed: map['completed'] ?? false,
       activities: List<String>.from(map['activities'] ?? []),
     );

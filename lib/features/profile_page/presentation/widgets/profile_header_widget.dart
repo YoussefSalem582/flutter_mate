@@ -61,8 +61,26 @@ class ProfileHeaderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authController = Get.find<AuthController>();
-    final achievementController = Get.find<AchievementController>();
-    final progressController = Get.find<ProgressTrackerController>();
+
+    // Safely get controllers with fallback
+    AchievementController? achievementController;
+    ProgressTrackerController? progressController;
+
+    try {
+      achievementController = Get.find<AchievementController>();
+    } catch (e) {
+      print('AchievementController not found: $e');
+    }
+
+    try {
+      progressController = Get.find<ProgressTrackerController>();
+      // Refresh stats when widget builds
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        progressController?.refreshStats();
+      });
+    } catch (e) {
+      print('ProgressTrackerController not found: $e');
+    }
 
     const xpToNextLevel = 1000;
 
@@ -77,13 +95,13 @@ class ProfileHeaderWidget extends StatelessWidget {
           ? _formatJoinDate(user.createdAt)
           : 'Learning since October 2025';
 
-      final currentXP = progressController.xpPoints.value;
+      final currentXP = progressController?.xpPoints.value ?? 0;
       final currentLevel = (currentXP / xpToNextLevel).floor() + 1;
       final unlockedAchievements =
-          achievementController.unlockedAchievements.length;
-      final totalAchievements = achievementController.achievements.length;
+          achievementController?.unlockedAchievements.length ?? 0;
+      final totalAchievements = achievementController?.achievements.length ?? 0;
       final achievementsLabel =
-          (achievementController.isLoading && totalAchievements == 0)
+          (achievementController?.isLoading == true && totalAchievements == 0)
               ? 'Loading'
               : totalAchievements > 0
                   ? '$unlockedAchievements/$totalAchievements'

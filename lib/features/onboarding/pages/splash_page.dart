@@ -123,8 +123,8 @@ class _SplashPageState extends State<SplashPage>
                               // Logo Image
                               Image.asset(
                                 AppAssets.appLogo,
-                                width: isDesktop ? 320 : 260,
-                                height: isDesktop ? 320 : 260,
+                                width: isDesktop ? 200 : 160,
+                                height: isDesktop ? 200 : 160,
                                 fit: BoxFit.contain,
                                 errorBuilder: (context, error, stackTrace) {
                                   // Fallback to icon if image not found
@@ -150,7 +150,7 @@ class _SplashPageState extends State<SplashPage>
                                   );
                                 },
                               ),
-                              SizedBox(height: isDesktop ? 24 : 20),
+                              SizedBox(height: isDesktop ? 32 : 28),
                               Text(
                                 'Your Flutter learning companion',
                                 style: theme.textTheme.bodyLarge?.copyWith(

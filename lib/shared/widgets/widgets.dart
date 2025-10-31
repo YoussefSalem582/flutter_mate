@@ -7,6 +7,7 @@ export 'custom_button.dart';
 export 'custom_progress_bar.dart';
 export 'difficulty_chip.dart';
 export 'empty_state.dart';
+export 'guest_login_prompt.dart';
 export 'info_chip.dart';
 export 'loading_indicator.dart';
 export 'stat_card.dart';

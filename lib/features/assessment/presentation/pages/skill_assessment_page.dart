@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../controller/assessment_controller.dart';
 import '../widgets/assessment_question_card.dart';
 
@@ -29,6 +30,7 @@ class _SkillAssessmentPageState extends State<SkillAssessmentPage> {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<AssessmentController>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return WillPopScope(
       onWillPop: () async {
@@ -47,7 +49,7 @@ class _SkillAssessmentPageState extends State<SkillAssessmentPage> {
             child: Obx(
               () => LinearProgressIndicator(
                 value: controller.progressPercentage / 100,
-                backgroundColor: Colors.grey[300],
+                backgroundColor: isDark ? Colors.grey[800] : Colors.grey[300],
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.success),
               ),
             ),
@@ -72,7 +74,7 @@ class _SkillAssessmentPageState extends State<SkillAssessmentPage> {
                     Text(
                       'Loading questions',
                       style: AppTextStyles.caption.copyWith(
-                        color: Colors.grey[600],
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
                       ),
                     ),
                   ],
@@ -89,7 +91,7 @@ class _SkillAssessmentPageState extends State<SkillAssessmentPage> {
                     Icon(
                       Icons.error_outline,
                       size: 64,
-                      color: Colors.grey[400],
+                      color: isDark ? Colors.grey[600] : Colors.grey[400],
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -100,7 +102,7 @@ class _SkillAssessmentPageState extends State<SkillAssessmentPage> {
                     Text(
                       'Please try again later',
                       style: AppTextStyles.caption.copyWith(
-                        color: Colors.grey[600],
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -115,45 +117,135 @@ class _SkillAssessmentPageState extends State<SkillAssessmentPage> {
 
             return Column(
               children: [
-                // Progress indicator
+                // Progress and XP indicator
                 Container(
                   padding: const EdgeInsets.all(16),
-                  color: AppColors.lightSurface,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Question ${controller.currentQuestionIndex.value + 1}/${controller.selectedQuestions.length}',
-                        style: AppTextStyles.bodyMedium,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey[900] : AppColors.lightSurface,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 5,
+                        offset: const Offset(0, 2),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getDifficultyColor(question.difficulty)
-                              .withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _getDifficultyIcon(question.difficulty),
-                              size: 16,
-                              color: _getDifficultyColor(question.difficulty),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Question counter
+                          Text(
+                            'Question ${controller.currentQuestionIndex.value + 1}/${controller.selectedQuestions.length}',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
-                            const SizedBox(width: 4),
-                            Text(
-                              question.difficulty.toUpperCase(),
-                              style: AppTextStyles.caption.copyWith(
-                                color: _getDifficultyColor(question.difficulty),
-                                fontWeight: FontWeight.bold,
+                          ),
+                          
+                          // XP Score display
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.success.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: AppColors.success.withOpacity(0.3),
+                                width: 1,
                               ),
                             ),
-                          ],
-                        ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.stars,
+                                  size: 18,
+                                  color: AppColors.warning,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '${controller.score.value} XP',
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.success,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 12),
+                      
+                      // Difficulty and correct answers badges
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Difficulty badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getDifficultyColor(question.difficulty)
+                                  .withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _getDifficultyIcon(question.difficulty),
+                                  size: 16,
+                                  color: _getDifficultyColor(question.difficulty),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  question.difficulty.toUpperCase(),
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: _getDifficultyColor(question.difficulty),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                          // Correct answers counter
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.info.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.check_circle_outline,
+                                  size: 16,
+                                  color: AppColors.info,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${controller.correctAnswers.value}/${controller.currentQuestionIndex.value} correct',
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.info,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -161,12 +253,29 @@ class _SkillAssessmentPageState extends State<SkillAssessmentPage> {
 
                 // Question card
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: AssessmentQuestionCard(
-                      question: question,
-                      onAnswer: (index) => controller.answerQuestion(index),
-                      selectedAnswer: controller.getUserAnswer(question.id),
+                  child: ResponsiveBuilder(
+                    mobile: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: AssessmentQuestionCard(
+                        question: question,
+                        onAnswer: (index) => controller.answerQuestion(index),
+                        selectedAnswer: controller.getUserAnswer(question.id),
+                      ),
+                    ),
+                    desktop: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 800),
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(32),
+                          child: AssessmentQuestionCard(
+                            question: question,
+                            onAnswer: (index) =>
+                                controller.answerQuestion(index),
+                            selectedAnswer:
+                                controller.getUserAnswer(question.id),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -175,10 +284,10 @@ class _SkillAssessmentPageState extends State<SkillAssessmentPage> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? Colors.grey[900] : Colors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, -5),
                       ),
@@ -206,12 +315,14 @@ class _SkillAssessmentPageState extends State<SkillAssessmentPage> {
                         ),
                       const Spacer(),
 
-                      // Skip button
-                      TextButton(
-                        onPressed: () => controller.skipQuestion(),
-                        child: const Text('Skip'),
-                      ),
-                      const SizedBox(width: 12),
+                      // Skip button or Stats (show skip only if not answered)
+                      if (!controller.isQuestionAnswered(question.id)) ...[
+                        TextButton(
+                          onPressed: () => controller.skipQuestion(),
+                          child: const Text('Skip'),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
 
                       // Stats
                       Container(
@@ -240,6 +351,46 @@ class _SkillAssessmentPageState extends State<SkillAssessmentPage> {
                           ],
                         ),
                       ),
+
+                      // Next button (show only if answered)
+                      if (controller.isQuestionAnswered(question.id)) ...[
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          onPressed: () => controller.nextQuestion(),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 12,
+                            ),
+                            backgroundColor: AppColors.info,
+                          ),
+                          child: Row(
+                            children: [
+                              Text(
+                                controller.currentQuestionIndex.value ==
+                                        controller.selectedQuestions.length - 1
+                                    ? 'Finish'
+                                    : 'Next',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? AppColors.lightBackground
+                                      : AppColors.lightOnBackground,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.arrow_forward,
+                                size: 18,
+                                color: isDark
+                                    ? AppColors.lightBackground
+                                    : AppColors.lightOnBackground,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

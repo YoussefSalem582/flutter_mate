@@ -17,6 +17,8 @@ class AssessmentQuestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -54,10 +56,10 @@ class AssessmentQuestionCard extends StatelessWidget {
             // Options
             ...List.generate(
               question.options.length,
-              (index) => _buildOption(index, question.options[index]),
+              (index) => _buildOption(context, index, question.options[index]),
             ),
 
-            // Points indicator
+            // XP indicator
             const SizedBox(height: 16),
             Row(
               children: [
@@ -68,9 +70,10 @@ class AssessmentQuestionCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  '${question.points} ${question.points == 1 ? 'point' : 'points'}',
+                  '${question.xp} XP',
                   style: AppTextStyles.caption.copyWith(
-                    color: Colors.grey[600],
+                    color: isDark ? AppColors.lightPrimary : AppColors.info,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -81,7 +84,8 @@ class AssessmentQuestionCard extends StatelessWidget {
     );
   }
 
-  Widget _buildOption(int index, String text) {
+  Widget _buildOption(BuildContext context, int index, String text) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = selectedAnswer == index;
     final optionLabels = ['A', 'B', 'C', 'D', 'E', 'F'];
 
@@ -91,10 +95,13 @@ class AssessmentQuestionCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color:
-              isSelected ? AppColors.info.withOpacity(0.1) : Colors.grey[100],
+          color: isSelected
+              ? AppColors.info.withOpacity(0.1)
+              : (isDark ? Colors.grey[800] : Colors.grey[100]),
           border: Border.all(
-            color: isSelected ? AppColors.info : Colors.grey[300]!,
+            color: isSelected
+                ? AppColors.info
+                : (isDark ? Colors.grey[700]! : Colors.grey[300]!),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -106,14 +113,18 @@ class AssessmentQuestionCard extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.info : Colors.grey[300],
+                color: isSelected
+                    ? AppColors.info
+                    : (isDark ? Colors.grey[700] : Colors.grey[300]),
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Text(
                   optionLabels[index],
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: isSelected ? Colors.white : Colors.black87,
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark ? Colors.white70 : Colors.black87),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
