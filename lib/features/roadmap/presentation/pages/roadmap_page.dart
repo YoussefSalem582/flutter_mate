@@ -128,6 +128,10 @@ class RoadmapPage extends GetView<RoadmapController> {
           cardHeight: 100,
           isDark: isDark,
         ),
+        const SizedBox(height: 16),
+
+        // Flutter Developer Roadmap Banner
+        _buildRoadmapGuideBanner(isDark),
         const SizedBox(height: 32),
 
         StagesList(
@@ -176,6 +180,10 @@ class RoadmapPage extends GetView<RoadmapController> {
           child: ListView(
             padding: EdgeInsets.all(padding * 1.5),
             children: [
+              // Flutter Developer Roadmap Banner
+              _buildRoadmapGuideBanner(isDark),
+              const SizedBox(height: 24),
+
               StagesList(
                 stages: controller.stages,
                 isDark: isDark,
@@ -186,6 +194,79 @@ class RoadmapPage extends GetView<RoadmapController> {
           ),
         ),
       ],
+    );
+  }
+
+  /// Flutter Developer Roadmap guide banner
+  Widget _buildRoadmapGuideBanner(bool isDark) {
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.flutterDeveloperRoadmap),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF667eea),
+              const Color(0xFF764ba2),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF667eea).withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.route,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'How to Become a Flutter Developer',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Explore the complete roadmap from beginner to expert',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white,
+              size: 18,
+            ),
+          ],
+        ),
+      ),
     );
   }
 

@@ -30,4 +30,5 @@ class AppRoutes {
   static const String stageDetail = '/stage-detail';
   static const String lessons = '/lessons';
   static const String lessonDetail = '/lesson-detail';
+  static const String flutterDeveloperRoadmap = '/flutter-developer-roadmap';
 }

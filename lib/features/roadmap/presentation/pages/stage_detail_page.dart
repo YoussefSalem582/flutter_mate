@@ -19,7 +19,7 @@ class StageDetailPage extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final roadmapController = Get.find<RoadmapController>();
     final lessonController = Get.find<LessonController>();
-
+    
     // Get stage from arguments
     final RoadmapStage stage = Get.arguments as RoadmapStage;
     final progress = roadmapController.stageProgress(stage.id);
@@ -106,10 +106,8 @@ class StageDetailPage extends StatelessWidget {
                                     child: LinearProgressIndicator(
                                       value: progress / 100,
                                       minHeight: 8,
-                                      backgroundColor:
-                                          Colors.white.withOpacity(0.3),
-                                      valueColor:
-                                          const AlwaysStoppedAnimation<Color>(
+                                      backgroundColor: Colors.white.withOpacity(0.3),
+                                      valueColor: const AlwaysStoppedAnimation<Color>(
                                         Colors.white,
                                       ),
                                     ),
@@ -198,8 +196,7 @@ class StageDetailPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Stats cards
-          _buildStatsRow(
-                  totalLessons, completedLessons, stage.topics.length, isDark)
+          _buildStatsRow(totalLessons, completedLessons, stage.topics.length, isDark)
               .animate()
               .fadeIn(duration: 400.ms)
               .slideY(begin: 0.2, end: 0),
@@ -244,8 +241,7 @@ class StageDetailPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            _buildLessonsList(
-                stageLessons, lessonController, stage.color, isDark),
+            _buildLessonsList(stageLessons, lessonController, stage.color, isDark),
           ],
 
           const SizedBox(height: 24),
@@ -369,8 +365,7 @@ class StageDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTopicCard(
-      String topic, Color stageColor, bool isDark, int index) {
+  Widget _buildTopicCard(String topic, Color stageColor, bool isDark, int index) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -515,16 +510,13 @@ class StageDetailPage extends StatelessWidget {
                             Icon(
                               Icons.schedule,
                               size: 14,
-                              color:
-                                  isDark ? Colors.grey[400] : Colors.grey[600],
+                              color: isDark ? Colors.grey[400] : Colors.grey[600],
                             ),
                             const SizedBox(width: 4),
                             Text(
                               '${lesson.duration} min',
                               style: AppTextStyles.caption.copyWith(
-                                color: isDark
-                                    ? Colors.grey[400]
-                                    : Colors.grey[600],
+                                color: isDark ? Colors.grey[400] : Colors.grey[600],
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -651,3 +643,4 @@ class _GridPatternPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+

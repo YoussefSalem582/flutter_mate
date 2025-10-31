@@ -15,6 +15,7 @@ import 'package:flutter_mate/features/roadmap/presentation/pages/roadmap_page.da
 import 'package:flutter_mate/features/roadmap/presentation/pages/lessons_page.dart';
 import 'package:flutter_mate/features/roadmap/presentation/pages/lesson_detail_page.dart';
 import 'package:flutter_mate/features/roadmap/presentation/pages/stage_detail_page.dart';
+import 'package:flutter_mate/features/roadmap/presentation/pages/flutter_developer_roadmap_page.dart';
 import 'package:flutter_mate/features/progress_tracker/controller/progress_tracker_binding.dart';
 import 'package:flutter_mate/features/progress_tracker/presentation/pages/progress_tracker_page.dart';
 import 'package:flutter_mate/features/assistant/controller/assistant_binding.dart';
@@ -177,6 +178,12 @@ class AppPages {
       name: AppRoutes.assessmentHistory,
       page: () => const AssessmentHistoryPage(),
       binding: AssessmentBinding(),
+      customTransition: SmoothPageTransition(),
+      transitionDuration: const Duration(milliseconds: 350),
+    ),
+    GetPage(
+      name: AppRoutes.flutterDeveloperRoadmap,
+      page: () => const FlutterDeveloperRoadmapPage(),
       customTransition: SmoothPageTransition(),
       transitionDuration: const Duration(milliseconds: 350),
     ),
